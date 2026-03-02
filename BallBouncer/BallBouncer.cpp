@@ -11,7 +11,9 @@ int main() {
     sf::CircleShape ball(20.f);
     ball.setFillColor(sf::Color::Red);
     ball.setPosition(400.f, 300.f);
+
     sf::Vector2f ballVelocity(5.f, 3.f);
+	float maxspeed = 10.f;
 
     float paddleWidth = 100.f;
     float paddleHeight = 20.f;
@@ -57,7 +59,12 @@ int main() {
 
 		// Check collision with paddle
 		if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
-            ballVelocity.y = -1.5*ballVelocity.y; // Simple bounce effect
+            ballVelocity.y = -1.1*ballVelocity.y; // Simple bounce effect
+
+			if (abs(ballVelocity.y) > maxspeed) {
+                
+				ballVelocity.y = maxspeed * (ballVelocity.y > 0 ? 1 : -1); // Cap the speed
+            }
         }
 
         window.clear(sf::Color::Black);
