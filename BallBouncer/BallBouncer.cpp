@@ -139,6 +139,7 @@ int main() {
             if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
                 isGameOver = true;
                 showName = false;
+				movePaddle = false;
 
             }
 
@@ -185,7 +186,7 @@ int main() {
 		if (showText2) {
 			window.draw(text2);
 		}
-		window.draw(scoreText);
+		
 		if (isGameOver) {
             window.draw(gameOver);
 		}
@@ -195,6 +196,7 @@ int main() {
 		if (showStart) {
 			window.draw(start);
 		}
+        window.draw(scoreText);
         window.display();
     }
 
