@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Graphics Programming Practice (C++)
 
 This repository contains my graphics programming practice projects.
@@ -63,3 +64,6 @@ General steps:
 - Physics simulation basics
 - Game development concepts
 - Real-world C++ application building
+=======
+# SFML-Projects
+>>>>>>> d8e4c4aa03824328e5113b1611e894dad6fe3a00
