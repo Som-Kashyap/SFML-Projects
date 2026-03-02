@@ -1,69 +1,25 @@
-<<<<<<< HEAD
-# Graphics Programming Practice (C++)
+# SFML Projects
 
-This repository contains my graphics programming practice projects.
-I am building these to understand rendering, game loops, and collision detection using C++.
-
-Currently learning computer graphics fundamentals alongside DSA and core CS concepts.
-
----
-
-## Projects
-
-### Moving Balls Simulation
-- Automatic ball movement
-- Collision detection
-- Multiple objects
-- Window rendering
-
-
----
-
-### (Add future projects here)
-- Gravity simulation
-- Particle system
-- Pong game
-- Physics engine basics
-
----
+Collection of small games and experiments built using C++ and SFML.
 
 ## Tech Stack
 - C++
-- raylib (graphics library)
-- VS Code
+- SFML 2.5.1
+- Visual Studio
 
----
+## Projects
+- Paddle Game - control rectangle and bounce the ball
+- Collision Practice - learning collision detection
+- Bouncing Ball - basic physics and movement
 
-## Why This Repository
+## Requirements
+- Visual Studio
+- SFML 2.5.1 installed and linked
 
-I created this repository to:
+## How to Run
+1. Open project in Visual Studio
+2. Build solution
+3. Run
 
-- Learn real-time rendering
-- Understand game loop structure
-- Practice object interaction logic
-- Apply mathematics in programming
-- Move beyond only DSA problem solving
-
----
-
-## How to Run Projects
-
-Each project folder contains its own instructions.
-
-General steps:
-
-1. Install raylib
-2. Compile source files
-3. Run executable
-
----
-
-## Learning Goals
-
-- Graphics programming fundamentals
-- Physics simulation basics
-- Game development concepts
-- Real-world C++ application building
-=======
-# SFML-Projects
->>>>>>> d8e4c4aa03824328e5113b1611e894dad6fe3a00
+## Purpose
+Learning game development, graphics programming, and real-time input handling using SFML.
