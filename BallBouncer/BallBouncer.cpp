@@ -62,6 +62,7 @@ int main() {
 
 	// Game state variables
 	bool moveBall = false;
+	bool movePaddle = false;
 
     sf::Text name;
 	bool showName = true;
@@ -106,6 +107,7 @@ int main() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
                 showStart = false;
 				moveBall = true;
+				movePaddle = true;
                 ballVelocity = { 5.0f, 3.0f }; // Set initial velocity when the game starts
             }
 
@@ -159,23 +161,19 @@ int main() {
 			}
 
         // Input handling (outside event loop)
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            // Move right but prevent leaving the window
-            if (paddle.getPosition().x + paddleWidth < static_cast<float>(windowWidth)) {
-                paddle.move(paddleSpeed, 0.f);
+        if (movePaddle) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+                // Move right but prevent leaving the window
+                if (paddle.getPosition().x + paddleWidth < static_cast<float>(windowWidth)) {
+                    paddle.move(paddleSpeed, 0.f);
+                }
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+                if (paddle.getPosition().x > 0.f) {
+                    paddle.move(-paddleSpeed, 0.f);
+                }
             }
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            if (paddle.getPosition().x > 0.f) {
-                paddle.move(-paddleSpeed, 0.f);
-            }
-        }
-        
-
-        // simple ball movement and bounce from window edges
-
-
-       
 
         window.clear(sf::Color::Blue);
         window.draw(ball);
