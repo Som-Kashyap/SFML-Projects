@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="BallBouncer.vcxproj" Id="5c983ab1-d065-4620-b29d-a018734b5345" />
+</Solution>

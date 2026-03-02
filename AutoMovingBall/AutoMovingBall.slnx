@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AutoMovingBall.vcxproj" Id="4229273f-3c0a-4305-aa56-4e978fa6152c" />
+</Solution>
