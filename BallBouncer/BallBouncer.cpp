@@ -60,6 +60,9 @@ int main() {
 	text2.setFillColor(sf::Color::Red);
     text2.setPosition(10.f, 40.f);
 
+	// Game state variables
+	bool moveBall = false;
+
     sf::Text name;
 	bool showName = true;
 	name.setFont(font2);
@@ -68,6 +71,13 @@ int main() {
     name.setFillColor(sf::Color::Color(255, 165, 0));
 	name.setPosition(200.f, 200.f);
 
+    sf::Text start;
+	bool showStart = true;
+	start.setFont(font2);
+    start.setString("Hit Enter to Start!");
+	start.setCharacterSize(50);
+    start.setFillColor(sf::Color::Green);
+	start.setPosition(150.f, 300.f);
 
 	sf::Text scoreText;
 	scoreText.setFont(font);
@@ -86,12 +96,67 @@ int main() {
 
 
     while (window.isOpen()) {
+
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+                showStart = false;
+				moveBall = true;
+                ballVelocity = { 5.0f, 3.0f }; // Set initial velocity when the game starts
+            }
+
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    showText = false; // Hide text on mouse click
+                    showText2 = false;
+                }
+            }
         }
+
+
+        if(moveBall) {
+
+            ball.move(ballVelocity);
+
+            sf::Vector2f pos = ball.getPosition();
+            float radius = ball.getRadius();
+
+            if (pos.x <= 0.f || pos.x + radius * 2.f >= static_cast<float>(windowWidth)) {
+                ballVelocity.x = -ballVelocity.x;
+            }
+            if (pos.y <= 0.f) {
+                ballVelocity.y = -ballVelocity.y;
+
+                //ballVelocity.y = -ballVelocity.y;
+            }
+
+            if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
+                isGameOver = true;
+                showName = false;
+
+            }
+
+
+
+            // Check collision with paddle
+            if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
+                score += 10; // Increment score on paddle hit
+                scoreText.setString("Score: " + std::to_string(score)); // Update score display
+
+                ballVelocity.y = -1.1 * ballVelocity.y; // Simple bounce effect
+
+                if (abs(ballVelocity.y) > maxspeed) {
+
+                    ballVelocity.y = maxspeed * (ballVelocity.y > 0 ? 1 : -1); // Cap the speed and maintain direction
+                }
+            }
+
+
+			}
 
         // Input handling (outside event loop)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
@@ -105,49 +170,17 @@ int main() {
                 paddle.move(-paddleSpeed, 0.f);
             }
         }
-        if (event.type == sf::Event::MouseButtonPressed) {
-            if(event.mouseButton.button == sf::Mouse::Left){
-				showText = false; // Hide text on mouse click
-				showText2 = false;
-            }
-        }
+        
 
         // simple ball movement and bounce from window edges
-        ball.move(ballVelocity);
-        sf::Vector2f pos = ball.getPosition();
-        float radius = ball.getRadius();
 
-        if (pos.x <= 0.f || pos.x + radius * 2.f >= static_cast<float>(windowWidth)) {
-            ballVelocity.x = -ballVelocity.x;
-        }
-        if (pos.y <= 0.f) {
-            ballVelocity.y = -ballVelocity.y;
-			
-            //ballVelocity.y = -ballVelocity.y;
-        }
 
-		if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
-            isGameOver = true;
-			showName = false;
-			
-		}
-
-		// Check collision with paddle
-		if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
-			score += 10; // Increment score on paddle hit
-			scoreText.setString("Score: " + std::to_string(score)); // Update score display
-
-            ballVelocity.y = -1.1*ballVelocity.y; // Simple bounce effect
-
-			if (abs(ballVelocity.y) > maxspeed) {
-                
-				ballVelocity.y = maxspeed * (ballVelocity.y > 0 ? 1 : -1); // Cap the speed and maintain direction
-            }
-        }
+       
 
         window.clear(sf::Color::Blue);
         window.draw(ball);
         window.draw(paddle);
+
 		if (showText) {
             window.draw(text);
 		}
@@ -160,6 +193,9 @@ int main() {
 		}
 		if (showName) {
 			window.draw(name);
+		}
+		if (showStart) {
+			window.draw(start);
 		}
         window.display();
     }
