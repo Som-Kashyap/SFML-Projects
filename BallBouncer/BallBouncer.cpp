@@ -11,7 +11,7 @@ int main() {
 	// Creating ball
     sf::CircleShape ball(20.f);
     ball.setFillColor(sf::Color::Red);
-    ball.setPosition(400.f, 300.f);
+    //ball.setPosition(400.f, 300.f);
 
     sf::Vector2f ballVelocity(5.f, 3.f);
 
@@ -23,7 +23,7 @@ int main() {
 
 	// Creating paddle
     sf::RectangleShape paddle(sf::Vector2f(paddleWidth, paddleHeight));
-    paddle.setFillColor(sf::Color::Blue);
+    paddle.setFillColor(sf::Color::Yellow);
     // Place paddle centered horizontally near the bottom
     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
 
@@ -32,9 +32,18 @@ int main() {
 
 	//loading font for text display
 	sf::Font font;
+    bool showText = true;
     if (!font.loadFromFile("resources/arial.ttf")) {
         std::cout << "FONT FAILED!\n";
     }
+
+	sf::Font font2;
+    if (!font2.loadFromFile("resources/ARIALNB.ttf")) {
+        std::cout << "FONT FAILED!\n";
+	}
+
+	//creating score variable and text to display it
+	int score = 0;
 		
 	sf::Text text;
     text.setFont(font);
@@ -42,6 +51,38 @@ int main() {
     text.setCharacterSize(20);
 	text.setFillColor(sf::Color::White);
 	text.setPosition(10.f, 10.f);
+
+	sf::Text text2;
+	bool showText2 = true;
+	text2.setFont(font);
+    text2.setString("(Click the mouse to hide text!)");
+	text2.setCharacterSize(20);
+	text2.setFillColor(sf::Color::Red);
+    text2.setPosition(10.f, 40.f);
+
+    sf::Text name;
+	bool showName = true;
+	name.setFont(font2);
+	name.setString("BALL BOUNCER");
+	name.setCharacterSize(50);
+    name.setFillColor(sf::Color::Color(255, 165, 0));
+	name.setPosition(200.f, 200.f);
+
+
+	sf::Text scoreText;
+	scoreText.setFont(font);
+	//scoreText.setString("Score: " + std::to_string(score));
+	scoreText.setCharacterSize(20);
+	scoreText.setFillColor(sf::Color::Green);
+	scoreText.setPosition(10.f, 70.f);
+
+    sf::Text gameOver;
+	bool isGameOver = false;
+	gameOver.setFont(font2);
+	gameOver.setString("GAME OVER!");
+	gameOver.setCharacterSize(50);
+	gameOver.setFillColor(sf::Color::Red);
+	gameOver.setPosition(250.f, 300.f);
 
 
     while (window.isOpen()) {
@@ -64,21 +105,38 @@ int main() {
                 paddle.move(-paddleSpeed, 0.f);
             }
         }
+        if (event.type == sf::Event::MouseButtonPressed) {
+            if(event.mouseButton.button == sf::Mouse::Left){
+				showText = false; // Hide text on mouse click
+				showText2 = false;
+            }
+        }
 
-        // (Optional) simple ball movement and bounce from window edges
+        // simple ball movement and bounce from window edges
         ball.move(ballVelocity);
         sf::Vector2f pos = ball.getPosition();
         float radius = ball.getRadius();
+
         if (pos.x <= 0.f || pos.x + radius * 2.f >= static_cast<float>(windowWidth)) {
             ballVelocity.x = -ballVelocity.x;
         }
-        if (pos.y <= 0.f || pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
-			
+        if (pos.y <= 0.f) {
             ballVelocity.y = -ballVelocity.y;
+			
+            //ballVelocity.y = -ballVelocity.y;
         }
+
+		if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
+            isGameOver = true;
+			showName = false;
+			
+		}
 
 		// Check collision with paddle
 		if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
+			score += 10; // Increment score on paddle hit
+			scoreText.setString("Score: " + std::to_string(score)); // Update score display
+
             ballVelocity.y = -1.1*ballVelocity.y; // Simple bounce effect
 
 			if (abs(ballVelocity.y) > maxspeed) {
@@ -87,10 +145,22 @@ int main() {
             }
         }
 
-        window.clear(sf::Color::Black);
+        window.clear(sf::Color::Blue);
         window.draw(ball);
         window.draw(paddle);
-		window.draw(text);
+		if (showText) {
+            window.draw(text);
+		}
+		if (showText2) {
+			window.draw(text2);
+		}
+		window.draw(scoreText);
+		if (isGameOver) {
+            window.draw(gameOver);
+		}
+		if (showName) {
+			window.draw(name);
+		}
         window.display();
     }
 
