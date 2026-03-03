@@ -102,6 +102,13 @@ int main() {
 	gameOver.setFillColor(sf::Color::Red);
 	gameOver.setPosition(250.f, 300.f);
 
+    sf::Text restart;
+    restart.setFont(font);
+    restart.setString("Hit Enter to restart");
+    restart.setCharacterSize(30);
+    restart.setFillColor(sf::Color::Magenta);
+    restart.setPosition(250.f, 0.f);
+
     
 		GameState gameState = GameState::StartScreen;
 
@@ -122,9 +129,11 @@ int main() {
 				if (gameState == GameState::StartScreen) {
 
                     gameState = GameState::Playing;
+
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
                     score = 0;
+                    
 
                 }
                 else if (gameState == GameState::GameOver) {
@@ -147,6 +156,7 @@ int main() {
 
 
         if (gameState == GameState::Playing) {
+
 
             ball.move(ballVelocity);
 
@@ -203,6 +213,7 @@ int main() {
 		}
         if (gameState == GameState::GameOver) {
             window.draw(gameOver);
+            window.draw(restart);
         }
 		
 		if (showName) {
