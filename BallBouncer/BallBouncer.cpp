@@ -6,6 +6,7 @@ enum class GameState
     StartScreen,
     Playing,
     Paused,
+	HelpScreen,
 	GameOver    
 };
 
@@ -52,21 +53,6 @@ int main() {
 
 	//creating score variable and text to display it
 	int score = 0;
-		
-	sf::Text text;
-    text.setFont(font);
-	text.setString("Use left and right arrow keys to move the paddle");
-    text.setCharacterSize(20);
-	text.setFillColor(sf::Color::White);
-	text.setPosition(10.f, 10.f);
-
-	sf::Text text2;
-	bool showText2 = true;
-	text2.setFont(font);
-    text2.setString("(Click the mouse to hide text!)");
-	text2.setCharacterSize(20);
-	text2.setFillColor(sf::Color::Red);
-    text2.setPosition(10.f, 40.f);
 
 	// Game state variables
 	//bool moveBall = false;
@@ -108,7 +94,7 @@ int main() {
     restart.setString("Hit Enter to restart");
     restart.setCharacterSize(30);
     restart.setFillColor(sf::Color::Magenta);
-    restart.setPosition(250.f, 0.f);
+    restart.setPosition(250.f, 400.f);
 
 	sf::Text finalScore;
 	finalScore.setFont(font2);
@@ -130,6 +116,27 @@ int main() {
 	resumeText.setCharacterSize(30);
 	resumeText.setFillColor(sf::Color::Green);
 	resumeText.setPosition(250.f, 0.f);
+
+	sf::Text helpText;
+	helpText.setFont(font);
+	helpText.setString("Use left and right arrow keys to move the paddle. Don't let the ball fall!");
+	helpText.setCharacterSize(20);
+	helpText.setFillColor(sf::Color::Red);
+	helpText.setPosition(10.f, 10.f);
+
+	sf::Text showHelp;
+	showHelp.setFont(font);
+	showHelp.setString("Press H for Help");
+	showHelp.setCharacterSize(20);
+	showHelp.setFillColor(sf::Color::White);
+	showHelp.setPosition(200.f, 400.f);
+
+	sf::Text menuText;
+	menuText.setFont(font);
+	menuText.setString("Press 0 to return to Menu");
+	menuText.setCharacterSize(20);
+	menuText.setFillColor(sf::Color::White);
+	menuText.setPosition(250.f, 500.f);   
     
 		GameState gameState = GameState::StartScreen;
 
@@ -144,17 +151,17 @@ int main() {
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
                 showStart = false;
-				//moveBall = true;
-				//movePaddle = true;
-                
-				if (gameState == GameState::StartScreen) {
+                //moveBall = true;
+                //movePaddle = true;
+
+                if (gameState == GameState::StartScreen) {
 
                     gameState = GameState::Playing;
 
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
                     score = 0;
-                    
+
 
                 }
                 else if (gameState == GameState::GameOver) {
@@ -168,12 +175,7 @@ int main() {
                 }
             }
 
-            if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    showText = false; // Hide text on mouse click
-                    showText2 = false;
-                }
-            }
+         
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
                 if (gameState == GameState::Playing) {
                     gameState = GameState::Paused;
@@ -181,6 +183,17 @@ int main() {
                 else if (gameState == GameState::Paused) {
                     gameState = GameState::Playing;
                 }
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H) {
+                if (gameState == GameState::HelpScreen) {
+                    gameState = GameState::StartScreen;
+                }
+                else if (gameState == GameState::StartScreen) {
+                    gameState = GameState::HelpScreen;
+                }
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
+                gameState = GameState::StartScreen;
 			}
         }
 
@@ -234,22 +247,19 @@ int main() {
       
         window.clear(sf::Color::Blue);
        
-		if (showText) {
-            window.draw(text);
-		}
-		if (showText2) {
-			window.draw(text2);
-		}
+		
         if (gameState == GameState::GameOver) {
             window.draw(gameOver);
             window.draw(restart);
             window.draw(finalScore);
+			window.draw(menuText);
         }
         if (!(gameState == GameState::GameOver)) {
             window.draw(name);
         }
 		if (gameState == GameState::StartScreen) {
             window.draw(start);
+			window.draw(showHelp);
         }
         if (gameState == GameState::Playing) {
             window.draw(ball);
@@ -260,6 +270,9 @@ int main() {
         if (gameState == GameState::Paused) {
             window.draw(pausedText);
 			window.draw(resumeText);
+		}
+        if (gameState == GameState::HelpScreen) {
+			window.draw(helpText);
 		}
         
         window.display();
