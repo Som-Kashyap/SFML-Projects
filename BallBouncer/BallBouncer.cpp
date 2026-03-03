@@ -5,6 +5,7 @@ enum class GameState
 {
     StartScreen,
     Playing,
+    Paused,
 	GameOver    
 };
 
@@ -116,6 +117,13 @@ int main() {
 	finalScore.setFillColor(sf::Color::Yellow);
 	finalScore.setPosition(250.f, 50.f);
 
+	sf::Text pausedText;
+	pausedText.setFont(font2);
+	pausedText.setString("PAUSED");
+	pausedText.setCharacterSize(50);
+	pausedText.setFillColor(sf::Color::White);
+	pausedText.setPosition(300.f, 300.f);
+
     
 		GameState gameState = GameState::StartScreen;
 
@@ -160,6 +168,14 @@ int main() {
                     showText2 = false;
                 }
             }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
+                if (gameState == GameState::Playing) {
+                    gameState = GameState::Paused;
+                }
+                else if (gameState == GameState::Paused) {
+                    gameState = GameState::Playing;
+                }
+			}
         }
 
 
@@ -234,6 +250,9 @@ int main() {
             window.draw(paddle);
 
             window.draw(scoreText);
+		}
+        if (gameState == GameState::Paused) {
+            window.draw(pausedText);
 		}
         
         window.display();
