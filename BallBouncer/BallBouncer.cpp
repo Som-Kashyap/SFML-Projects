@@ -1,6 +1,13 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+enum class GameState
+{
+    StartScreen,
+    Playing,
+	GameOver    
+};
+
 int main() {
     const unsigned int windowWidth = 800;
     const unsigned int windowHeight = 600;
@@ -61,8 +68,8 @@ int main() {
     text2.setPosition(10.f, 40.f);
 
 	// Game state variables
-	bool moveBall = false;
-	bool movePaddle = false;
+	//bool moveBall = false;
+	//bool movePaddle = false;
 
     sf::Text name;
 	bool showName = true;
@@ -88,17 +95,20 @@ int main() {
 	scoreText.setPosition(10.f, 70.f);
 
     sf::Text gameOver;
-	bool isGameOver = false;
+	//bool isGameOver = false;
 	gameOver.setFont(font2);
 	gameOver.setString("GAME OVER!");
 	gameOver.setCharacterSize(50);
 	gameOver.setFillColor(sf::Color::Red);
 	gameOver.setPosition(250.f, 300.f);
 
+    
+		GameState gameState = GameState::StartScreen;
 
     while (window.isOpen()) {
 
         sf::Event event;
+
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
@@ -106,9 +116,25 @@ int main() {
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
                 showStart = false;
-				moveBall = true;
-				movePaddle = true;
-                ballVelocity = { 5.0f, 3.0f }; // Set initial velocity when the game starts
+				//moveBall = true;
+				//movePaddle = true;
+                
+				if (gameState == GameState::StartScreen) {
+
+                    gameState = GameState::Playing;
+                    ball.setPosition(400.f, 300.f);
+                    ballVelocity = { 5.0f , 3.0f };
+                    score = 0;
+
+                }
+                else if (gameState == GameState::GameOver) {
+
+                    gameState = GameState::Playing;
+                    ball.setPosition(400.f, 300.f);
+                    ballVelocity = { 5.0f , 3.0f };
+                    score = 0;
+
+                }
             }
 
             if (event.type == sf::Event::MouseButtonPressed) {
@@ -120,7 +146,7 @@ int main() {
         }
 
 
-        if(moveBall) {
+        if (gameState == GameState::Playing) {
 
             ball.move(ballVelocity);
 
@@ -133,19 +159,14 @@ int main() {
             if (pos.y <= 0.f) {
                 ballVelocity.y = -ballVelocity.y;
 
-                //ballVelocity.y = -ballVelocity.y;
+
             }
 
             if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
-                isGameOver = true;
+                gameState = GameState::GameOver;
                 showName = false;
-				movePaddle = false;
 
             }
-
-
-
-            // Check collision with paddle
             if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
                 score += 10; // Increment score on paddle hit
                 scoreText.setString("Score: " + std::to_string(score)); // Update score display
@@ -157,12 +178,6 @@ int main() {
                     ballVelocity.y = maxspeed * (ballVelocity.y > 0 ? 1 : -1); // Cap the speed and maintain direction
                 }
             }
-
-
-			}
-
-        // Input handling (outside event loop)
-        if (movePaddle) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
                 // Move right but prevent leaving the window
                 if (paddle.getPosition().x + paddleWidth < static_cast<float>(windowWidth)) {
@@ -175,7 +190,7 @@ int main() {
                 }
             }
         }
-
+      
         window.clear(sf::Color::Blue);
         window.draw(ball);
         window.draw(paddle);
@@ -186,10 +201,10 @@ int main() {
 		if (showText2) {
 			window.draw(text2);
 		}
-		
-		if (isGameOver) {
+        if (gameState == GameState::GameOver) {
             window.draw(gameOver);
-		}
+        }
+		
 		if (showName) {
 			window.draw(name);
 		}
