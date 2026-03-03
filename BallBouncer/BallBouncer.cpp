@@ -124,6 +124,12 @@ int main() {
 	pausedText.setFillColor(sf::Color::White);
 	pausedText.setPosition(300.f, 300.f);
 
+	sf::Text resumeText;
+	resumeText.setFont(font);
+	resumeText.setString("Press P to Resume");
+	resumeText.setCharacterSize(30);
+	resumeText.setFillColor(sf::Color::Green);
+	resumeText.setPosition(250.f, 0.f);
     
 		GameState gameState = GameState::StartScreen;
 
@@ -253,6 +259,7 @@ int main() {
 		}
         if (gameState == GameState::Paused) {
             window.draw(pausedText);
+			window.draw(resumeText);
 		}
         
         window.display();
