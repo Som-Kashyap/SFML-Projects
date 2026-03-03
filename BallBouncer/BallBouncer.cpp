@@ -85,7 +85,7 @@ int main() {
     start.setString("Hit Enter to Start!");
 	start.setCharacterSize(50);
     start.setFillColor(sf::Color::Green);
-	start.setPosition(150.f, 300.f);
+	start.setPosition(200.f, 300.f);
 
 	sf::Text scoreText;
 	scoreText.setFont(font);
@@ -108,6 +108,13 @@ int main() {
     restart.setCharacterSize(30);
     restart.setFillColor(sf::Color::Magenta);
     restart.setPosition(250.f, 0.f);
+
+	sf::Text finalScore;
+	finalScore.setFont(font2);
+	finalScore.setString("Final Score: " + std::to_string(score));
+	finalScore.setCharacterSize(30);
+	finalScore.setFillColor(sf::Color::Yellow);
+	finalScore.setPosition(250.f, 50.f);
 
     
 		GameState gameState = GameState::StartScreen;
@@ -175,6 +182,7 @@ int main() {
             if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
                 gameState = GameState::GameOver;
                 showName = false;
+				finalScore.setString("Final Score: " + std::to_string(score)); // Update final score display
 
             }
             if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
@@ -214,15 +222,18 @@ int main() {
         if (gameState == GameState::GameOver) {
             window.draw(gameOver);
             window.draw(restart);
+            window.draw(finalScore);
         }
-		
-		if (showName) {
-			window.draw(name);
+        if (!(gameState == GameState::GameOver)) {
+            window.draw(name);
+        }
+		if (gameState == GameState::StartScreen) {
+            window.draw(start);
+        }
+        if (gameState == GameState::Playing) {
+            window.draw(scoreText);
 		}
-		if (showStart) {
-			window.draw(start);
-		}
-        window.draw(scoreText);
+        
         window.display();
     }
 
