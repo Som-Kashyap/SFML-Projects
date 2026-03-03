@@ -146,6 +146,7 @@ int main() {
                 else if (gameState == GameState::GameOver) {
 
                     gameState = GameState::Playing;
+                    paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
                     score = 0;
