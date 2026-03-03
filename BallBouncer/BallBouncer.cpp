@@ -211,9 +211,7 @@ int main() {
         }
       
         window.clear(sf::Color::Blue);
-        window.draw(ball);
-        window.draw(paddle);
-
+       
 		if (showText) {
             window.draw(text);
 		}
@@ -232,6 +230,9 @@ int main() {
             window.draw(start);
         }
         if (gameState == GameState::Playing) {
+            window.draw(ball);
+            window.draw(paddle);
+
             window.draw(scoreText);
 		}
         
