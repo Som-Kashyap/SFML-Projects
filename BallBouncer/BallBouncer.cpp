@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 
 enum class GameState
@@ -52,6 +53,15 @@ private:
 	sf::Text helpText;
 	sf::Text showHelp;
 	sf::Text menuText;
+
+	sf::SoundBuffer bounceBuffer;
+	sf::Sound bounceSound;
+
+	sf::SoundBuffer gameOverBuffer;
+    sf::Sound gameOverSound;
+
+    sf::Music bgm;
+   
 
 	GameState gameState;
 };
@@ -146,6 +156,29 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(250.f, 500.f);
 
+	if (!bounceBuffer.loadFromFile("resources/BallCollision.wav")) {
+        std::cout << "SOUND FAILED!\n";
+    }
+
+	if (!gameOverBuffer.loadFromFile("resources/GameOver.wav")) {
+        std::cout << "SOUND FAILED!\n";
+    }
+
+	if (!bgm.openFromFile("resources/bgm.wav")) {
+        std::cout << "MUSIC FAILED!\n";
+    }
+
+	bgm.setLoop(true);
+    bgm.setVolume(50.f);
+
+    bounceSound.setBuffer(bounceBuffer);
+
+	bounceSound.setVolume(100.f);
+
+    gameOverSound.setBuffer(gameOverBuffer);
+    gameOverSound.setVolume(100.f);
+  
+
 	gameState = GameState::StartScreen;
 
 }
@@ -158,13 +191,11 @@ void Game:: handleEvents() {
             }
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
-                //showStart = false;
-                //moveBall = true;
-                //movePaddle = true;
-
+           
                 if (gameState == GameState::StartScreen) {
 
                     gameState = GameState::Playing;
+                    bgm.play();
 
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
@@ -175,6 +206,7 @@ void Game:: handleEvents() {
                 else if (gameState == GameState::GameOver) {
 
                     gameState = GameState::Playing;
+					bgm.play();
                     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
@@ -187,6 +219,7 @@ void Game:: handleEvents() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
                 if (gameState == GameState::Playing) {
                     gameState = GameState::Paused;
+					bgm.pause();
                 }
                 else if (gameState == GameState::Paused) {
                     gameState = GameState::Playing;
@@ -208,6 +241,7 @@ void Game:: handleEvents() {
     }
 
 void Game :: update() {
+
     if (gameState == GameState::Playing) {
         // Move the ball
         ball.move(ballVelocity);
@@ -218,10 +252,20 @@ void Game :: update() {
         if (ball.getPosition().y <= 0) {
             ballVelocity.y = -ballVelocity.y;
         }
+
         // Check for collision with the paddle
-        if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
+
+        if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())  ) {
+
+			float paddletop = paddle.getPosition().y;
+			float ballHeight = ball.getPosition().y + ball.getRadius() * 2;
+
+			ball.setPosition(ball.getPosition().x, paddletop - ball.getRadius() * 2 - 1);// Position the ball just above the paddle
+
+            bounceSound.play(); 
             ballVelocity.y = -ballVelocity.y;
-            score++;
+            score+=10;
+
             // Increase speed slightly on each hit, up to maxspeed
             if (std::abs(ballVelocity.x) < maxspeed) {
                 ballVelocity.x *= 1.05f;
@@ -229,10 +273,14 @@ void Game :: update() {
             if (std::abs(ballVelocity.y) < maxspeed) {
                 ballVelocity.y *= 1.05f;
             }
+
         }
         // Check for game over condition
         if (ball.getPosition().y > windowHeight) {
+
             gameState = GameState::GameOver;
+            gameOverSound.play();
+
         }
         // Move the paddle
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
@@ -249,9 +297,11 @@ void Game :: update() {
         }
         scoreText.setString("Score: " + std::to_string(score));
     }
+
 }
 
 void Game:: render() {
+
     window.clear(sf::Color::Blue);
     if (gameState == GameState::StartScreen) {
         window.draw(name);
@@ -278,13 +328,17 @@ void Game:: render() {
         window.draw(menuText);
     }
     window.display();
+
 }
 
 void Game::resetGame() {
+
     ball.setPosition(400.f, 300.f);
     ballVelocity = { 5.f, 3.f };
     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
     score = 0;
+    bgm.play();
+
 }
 
 void Game::run() {
