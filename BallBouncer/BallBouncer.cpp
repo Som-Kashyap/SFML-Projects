@@ -6,143 +6,151 @@ enum class GameState
     StartScreen,
     Playing,
     Paused,
-	HelpScreen,
-	GameOver    
+    HelpScreen,
+    GameOver
 };
 
-int main() {
-    const unsigned int windowWidth = 800;
-    const unsigned int windowHeight = 600;
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer");
+class Game {
+public:
+    Game();
+    void run();
 
-    window.setFramerateLimit(60);
+private:
+	void handleEvents();
+	void update();
+    void render();
+	void resetGame();
 
-	// Creating ball
-    sf::CircleShape ball(20.f);
-    ball.setFillColor(sf::Color::Red);
-    //ball.setPosition(400.f, 300.f);
+private:
+	const unsigned int windowWidth = 800;
+	const unsigned int windowHeight = 600;
 
-    sf::Vector2f ballVelocity(5.f, 3.f);
+	sf::RenderWindow window;
 
-	// Maximum speed for the ball
-	float maxspeed = 10.f;
+	sf::CircleShape ball;
+	sf::Vector2f ballVelocity;
+    float maxspeed;
 
-    float paddleWidth = 100.f;
-    float paddleHeight = 20.f;
+	sf::RectangleShape paddle;
+	float paddleSpeed;
+	float paddleWidth;
+	float paddleHeight;
 
-	// Creating paddle
-    sf::RectangleShape paddle(sf::Vector2f(paddleWidth, paddleHeight));
-    paddle.setFillColor(sf::Color::Yellow);
-    // Place paddle centered horizontally near the bottom
-    paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
-
-	// Paddle movement speed
-    float paddleSpeed = 5.0f;
-
-	//loading font for text display
 	sf::Font font;
-    bool showText = true;
+	sf::Font font2;
+
+    int score;
+
+	sf::Text name;
+	sf::Text start;
+	sf::Text scoreText;
+	sf::Text gameOver;
+	sf::Text restart;
+	sf::Text finalScore;
+	sf::Text pausedText;
+	sf::Text resumeText;
+	sf::Text helpText;
+	sf::Text showHelp;
+	sf::Text menuText;
+
+	GameState gameState;
+};
+
+Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
+{
+	window.setFramerateLimit(60);
+
+	ball.setRadius(20.f);
+	ball.setFillColor(sf::Color::Red);
+
+	ballVelocity = { 5.f, 3.f };
+	maxspeed = 10.f;
+
+	paddleWidth = 100.f;
+	paddleHeight = 20.f;
+	paddle.setSize(sf::Vector2f(paddleWidth, paddleHeight));
+	paddle.setFillColor(sf::Color::Yellow);
+	paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
+	paddleSpeed = 5.0f;
+
     if (!font.loadFromFile("resources/arial.ttf")) {
         std::cout << "FONT FAILED!\n";
-    }
-
-	sf::Font font2;
+	}
     if (!font2.loadFromFile("resources/ARIALNB.ttf")) {
         std::cout << "FONT FAILED!\n";
 	}
 
-	//creating score variable and text to display it
-	int score = 0;
+    score = 0;
 
-	// Game state variables
-	//bool moveBall = false;
-	//bool movePaddle = false;
-
-    sf::Text name;
-	bool showName = true;
 	name.setFont(font2);
 	name.setString("BALL BOUNCER");
 	name.setCharacterSize(50);
-    name.setFillColor(sf::Color::Color(255, 165, 0));
+	name.setFillColor(sf::Color::Color(255, 165, 0));
 	name.setPosition(200.f, 200.f);
 
-    sf::Text start;
-	bool showStart = true;
 	start.setFont(font2);
-    start.setString("Hit Enter to Start!");
+	start.setString("Hit Enter to Start!");
 	start.setCharacterSize(50);
-    start.setFillColor(sf::Color::Green);
+	start.setFillColor(sf::Color::Green);
 	start.setPosition(200.f, 300.f);
 
-	sf::Text scoreText;
 	scoreText.setFont(font);
-	//scoreText.setString("Score: " + std::to_string(score));
 	scoreText.setCharacterSize(20);
 	scoreText.setFillColor(sf::Color::Green);
 	scoreText.setPosition(10.f, 70.f);
 
-    sf::Text gameOver;
-	//bool isGameOver = false;
 	gameOver.setFont(font2);
 	gameOver.setString("GAME OVER!");
 	gameOver.setCharacterSize(50);
 	gameOver.setFillColor(sf::Color::Red);
 	gameOver.setPosition(250.f, 300.f);
 
-    sf::Text restart;
-    restart.setFont(font);
-    restart.setString("Hit Enter to restart");
-    restart.setCharacterSize(30);
-    restart.setFillColor(sf::Color::Magenta);
-    restart.setPosition(250.f, 400.f);
+	restart.setFont(font);
+	restart.setString("Hit Enter to restart");
+	restart.setCharacterSize(30);
+	restart.setFillColor(sf::Color::Magenta);
+	restart.setPosition(250.f, 400.f);
 
-	sf::Text finalScore;
 	finalScore.setFont(font2);
-	finalScore.setString("Final Score: " + std::to_string(score));
 	finalScore.setCharacterSize(30);
 	finalScore.setFillColor(sf::Color::Yellow);
 	finalScore.setPosition(250.f, 50.f);
 
-	sf::Text pausedText;
 	pausedText.setFont(font2);
 	pausedText.setString("PAUSED");
 	pausedText.setCharacterSize(50);
 	pausedText.setFillColor(sf::Color::White);
 	pausedText.setPosition(300.f, 300.f);
 
-	sf::Text resumeText;
 	resumeText.setFont(font);
 	resumeText.setString("Press P to Resume");
 	resumeText.setCharacterSize(30);
 	resumeText.setFillColor(sf::Color::Green);
 	resumeText.setPosition(250.f, 0.f);
 
-	sf::Text helpText;
 	helpText.setFont(font);
 	helpText.setString("Use left and right arrow keys to move the paddle. Don't let the ball fall!");
 	helpText.setCharacterSize(20);
 	helpText.setFillColor(sf::Color::Red);
 	helpText.setPosition(10.f, 10.f);
 
-	sf::Text showHelp;
 	showHelp.setFont(font);
 	showHelp.setString("Press H for Help");
 	showHelp.setCharacterSize(20);
 	showHelp.setFillColor(sf::Color::White);
 	showHelp.setPosition(200.f, 400.f);
 
-	sf::Text menuText;
 	menuText.setFont(font);
 	menuText.setString("Press 0 to return to Menu");
 	menuText.setCharacterSize(20);
 	menuText.setFillColor(sf::Color::White);
-	menuText.setPosition(250.f, 500.f);   
-    
-		GameState gameState = GameState::StartScreen;
+	menuText.setPosition(250.f, 500.f);
 
-    while (window.isOpen()) {
+	gameState = GameState::StartScreen;
 
-        sf::Event event;
+}
+void Game:: handleEvents() {
+    sf::Event event;
 
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -150,7 +158,7 @@ int main() {
             }
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
-                showStart = false;
+                //showStart = false;
                 //moveBall = true;
                 //movePaddle = true;
 
@@ -175,7 +183,7 @@ int main() {
                 }
             }
 
-         
+
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
                 if (gameState == GameState::Playing) {
                     gameState = GameState::Paused;
@@ -194,89 +202,102 @@ int main() {
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
                 gameState = GameState::StartScreen;
-			}
-        }
-
-
-        if (gameState == GameState::Playing) {
-
-
-            ball.move(ballVelocity);
-
-            sf::Vector2f pos = ball.getPosition();
-            float radius = ball.getRadius();
-
-            if (pos.x <= 0.f || pos.x + radius * 2.f >= static_cast<float>(windowWidth)) {
-                ballVelocity.x = -ballVelocity.x;
-            }
-            if (pos.y <= 0.f) {
-                ballVelocity.y = -ballVelocity.y;
-
-
-            }
-
-            if (pos.y + radius * 2.f >= static_cast<float>(windowHeight)) {
-                gameState = GameState::GameOver;
-                showName = false;
-				finalScore.setString("Final Score: " + std::to_string(score)); // Update final score display
-
-            }
-            if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
-                score += 10; // Increment score on paddle hit
-                scoreText.setString("Score: " + std::to_string(score)); // Update score display
-
-                ballVelocity.y = -1.1 * ballVelocity.y; // Simple bounce effect
-
-                if (abs(ballVelocity.y) > maxspeed) {
-
-                    ballVelocity.y = maxspeed * (ballVelocity.y > 0 ? 1 : -1); // Cap the speed and maintain direction
-                }
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-                // Move right but prevent leaving the window
-                if (paddle.getPosition().x + paddleWidth < static_cast<float>(windowWidth)) {
-                    paddle.move(paddleSpeed, 0.f);
-                }
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-                if (paddle.getPosition().x > 0.f) {
-                    paddle.move(-paddleSpeed, 0.f);
-                }
             }
         }
-      
-        window.clear(sf::Color::Blue);
-       
-		
-        if (gameState == GameState::GameOver) {
-            window.draw(gameOver);
-            window.draw(restart);
-            window.draw(finalScore);
-			window.draw(menuText);
-        }
-        if (!(gameState == GameState::GameOver)) {
-            window.draw(name);
-        }
-		if (gameState == GameState::StartScreen) {
-            window.draw(start);
-			window.draw(showHelp);
-        }
-        if (gameState == GameState::Playing) {
-            window.draw(ball);
-            window.draw(paddle);
 
-            window.draw(scoreText);
-		}
-        if (gameState == GameState::Paused) {
-            window.draw(pausedText);
-			window.draw(resumeText);
-		}
-        if (gameState == GameState::HelpScreen) {
-			window.draw(helpText);
-		}
-        
-        window.display();
     }
+
+void Game :: update() {
+    if (gameState == GameState::Playing) {
+        // Move the ball
+        ball.move(ballVelocity);
+        // Check for collisions with the window borders
+        if (ball.getPosition().x <= 0 || ball.getPosition().x + ball.getRadius() * 2 >= windowWidth) {
+            ballVelocity.x = -ballVelocity.x;
+        }
+        if (ball.getPosition().y <= 0) {
+            ballVelocity.y = -ballVelocity.y;
+        }
+        // Check for collision with the paddle
+        if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())) {
+            ballVelocity.y = -ballVelocity.y;
+            score++;
+            // Increase speed slightly on each hit, up to maxspeed
+            if (std::abs(ballVelocity.x) < maxspeed) {
+                ballVelocity.x *= 1.05f;
+            }
+            if (std::abs(ballVelocity.y) < maxspeed) {
+                ballVelocity.y *= 1.05f;
+            }
+        }
+        // Check for game over condition
+        if (ball.getPosition().y > windowHeight) {
+            gameState = GameState::GameOver;
+        }
+        // Move the paddle
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            paddle.move(-paddleSpeed, 0);
+            if (paddle.getPosition().x < 0) {
+                paddle.setPosition(0, paddle.getPosition().y);
+            }
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            paddle.move(paddleSpeed, 0);
+            if (paddle.getPosition().x + paddleWidth > windowWidth) {
+                paddle.setPosition(windowWidth - paddleWidth, paddle.getPosition().y);
+            }
+        }
+        scoreText.setString("Score: " + std::to_string(score));
+    }
+}
+
+void Game:: render() {
+    window.clear(sf::Color::Blue);
+    if (gameState == GameState::StartScreen) {
+        window.draw(name);
+        window.draw(start);
+        window.draw(showHelp);
+    }
+    else if (gameState == GameState::Playing) {
+        window.draw(ball);
+        window.draw(paddle);
+        window.draw(scoreText);
+    }
+    else if (gameState == GameState::Paused) {
+        window.draw(pausedText);
+        window.draw(resumeText);
+    }
+    else if (gameState == GameState::HelpScreen) {
+        window.draw(helpText);
+    }
+    else if (gameState == GameState::GameOver) {
+        window.draw(gameOver);
+        finalScore.setString("Final Score: " + std::to_string(score));
+        window.draw(finalScore);
+        window.draw(restart);
+        window.draw(menuText);
+    }
+    window.display();
+}
+
+void Game::resetGame() {
+    ball.setPosition(400.f, 300.f);
+    ballVelocity = { 5.f, 3.f };
+    paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
+    score = 0;
+}
+
+void Game::run() {
+    while (window.isOpen()) {
+        handleEvents();
+        update();
+        render();
+    }
+}
+int main() {
+    
+	Game game;
+	game.run();
 
     return 0;
 }
