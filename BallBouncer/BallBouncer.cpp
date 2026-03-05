@@ -298,7 +298,22 @@ void Game :: update() {
 
         // Check for collision with the paddle
 
-        if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds())  ) {
+        if (ball.getGlobalBounds().intersects(paddle.getGlobalBounds()) && ballVelocity.y > 0  ) {
+
+			float ballCenterX = ball.getPosition().x + ball.getRadius();
+			float paddleCenterX = paddle.getPosition().x + paddleWidth / 2.f;
+			float distanceFromCenter = ballCenterX - paddleCenterX;
+			float normalise = distanceFromCenter / (paddleWidth / 2.f);
+			
+			float speed = std::sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
+            if (speed > maxspeed) {
+                ballVelocity.x = (ballVelocity.x / speed) * maxspeed;
+                ballVelocity.y = (ballVelocity.y / speed) * maxspeed;
+			}
+			float angle = normalise * 75.f; // Max angle of 75 degrees
+			float radians = angle * 3.14159f / 180.f;
+			ballVelocity.x = speed * std::sin(radians);
+			ballVelocity.y = -std::abs(speed * std::cos(radians)); // Always bounce upwards
 
 			float paddletop = paddle.getPosition().y;
 			float ballHeight = ball.getPosition().y + ball.getRadius() * 2;
@@ -306,7 +321,7 @@ void Game :: update() {
 			ball.setPosition(ball.getPosition().x, paddletop - ball.getRadius() * 2 - 1);// Position the ball just above the paddle
 
             bounceSound.play(); 
-            ballVelocity.y = -ballVelocity.y;
+         
             score+=10;
 
             // Increase speed slightly on each hit, up to maxspeed
