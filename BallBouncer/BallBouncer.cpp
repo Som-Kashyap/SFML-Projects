@@ -67,6 +67,8 @@ private:
     sf::Music bgm;
 
     sf::Clock clock;
+    sf::Clock deltaTimeClock;
+	float deltaTime;
    
 
 	GameState gameState;
@@ -79,15 +81,15 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	ball.setRadius(20.f);
 	ball.setFillColor(sf::Color::Red);
 
-	ballVelocity = { 5.f, 3.f };
-	maxspeed = 10.f;
+	ballVelocity = { 500.f, -300.f };
+	maxspeed = 600.f;
 
 	paddleWidth = 100.f;
 	paddleHeight = 20.f;
 	paddle.setSize(sf::Vector2f(paddleWidth, paddleHeight));
 	paddle.setFillColor(sf::Color::Yellow);
 	paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
-	paddleSpeed = 5.0f;
+	paddleSpeed = 600.0f;
 
     if (!font.loadFromFile("resources/arial.ttf")) {
         std::cout << "FONT FAILED!\n";
@@ -196,12 +198,16 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	clickSound.setBuffer(clickBuffer);
 	clickSound.setVolume(100.f);
   
+	deltaTime = 0.f;
 
 	gameState = GameState::StartScreen;
 
 }
 void Game:: handleEvents() {
-    sf::Event event;
+
+
+
+        sf::Event event;
 
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -209,7 +215,8 @@ void Game:: handleEvents() {
             }
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
-           
+
+                clock.restart(); // Reset the clock for the next game
                 if (gameState == GameState::StartScreen) {
 
                     gameState = GameState::Playing;
@@ -217,7 +224,7 @@ void Game:: handleEvents() {
                     clickSound.play();
 
                     ball.setPosition(400.f, 300.f);
-                    ballVelocity = { 5.0f , 3.0f };
+                    ballVelocity = { 500.0f , -300.0f };
                     score = 0;
 
 
@@ -225,11 +232,11 @@ void Game:: handleEvents() {
                 else if (gameState == GameState::GameOver) {
 
                     gameState = GameState::Playing;
-					bgm.play();
-					clickSound.play();
+                    bgm.play();
+                    clickSound.play();
                     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
                     ball.setPosition(400.f, 300.f);
-                    ballVelocity = { 5.0f , 3.0f };
+                    ballVelocity = { 500.0f , -300.0f };
                     score = 0;
 
                 }
@@ -239,12 +246,12 @@ void Game:: handleEvents() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
                 if (gameState == GameState::Playing) {
                     gameState = GameState::Paused;
-					bgm.pause();
+                    bgm.pause();
                     clickSound.play();
                 }
                 else if (gameState == GameState::Paused) {
                     gameState = GameState::Playing;
-					bgm.play();
+                    bgm.play();
                     clickSound.play();
                 }
             }
@@ -265,16 +272,22 @@ void Game:: handleEvents() {
                 }
             }
 
-			float elapsed = clock.getElapsedTime().asSeconds();
-        }
+            float elapsed = clock.getElapsedTime().asSeconds();
 
+        }
+	
     }
+
+    
 
 void Game :: update() {
 
     if (gameState == GameState::Playing) {
         // Move the ball
-        ball.move(ballVelocity);
+
+		
+        ball.move(ballVelocity * deltaTime);
+
         // Check for collisions with the window borders
         if (ball.getPosition().x <= 0 || ball.getPosition().x + ball.getRadius() * 2 >= windowWidth) {
             ballVelocity.x = -ballVelocity.x;
@@ -314,13 +327,13 @@ void Game :: update() {
         }
         // Move the paddle
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            paddle.move(-paddleSpeed, 0);
+            paddle.move(-paddleSpeed*deltaTime, 0);
             if (paddle.getPosition().x < 0) {
                 paddle.setPosition(0, paddle.getPosition().y);
             }
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            paddle.move(paddleSpeed, 0);
+            paddle.move(paddleSpeed*deltaTime, 0);
             if (paddle.getPosition().x + paddleWidth > windowWidth) {
                 paddle.setPosition(windowWidth - paddleWidth, paddle.getPosition().y);
             }
@@ -359,7 +372,7 @@ void Game:: render() {
         window.draw(finalScore);
         window.draw(restart);
         window.draw(menuText);
-		clock.restart(); // Reset the clock for the next game
+		
     }
     window.display();
 
@@ -368,7 +381,7 @@ void Game:: render() {
 void Game::resetGame() {
 
     ball.setPosition(400.f, 300.f);
-    ballVelocity = { 5.f, 3.f };
+    ballVelocity = { 500.f, 300.f };
     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
     score = 0;
     bgm.play();
@@ -376,10 +389,14 @@ void Game::resetGame() {
 }
 
 void Game::run() {
+
     while (window.isOpen()) {
+
+        deltaTime = deltaTimeClock.restart().asSeconds(); //time in seconds since last frame
         handleEvents();
         update();
         render();
+
     }
 }
 int main() {
