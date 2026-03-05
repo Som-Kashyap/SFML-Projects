@@ -70,7 +70,9 @@ private:
     sf::Clock deltaTimeClock;
 	float deltaTime;
    
-
+	sf::Texture bgtexture;
+	sf::Sprite background;
+    
 	GameState gameState;
 };
 
@@ -105,34 +107,52 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	name.setCharacterSize(50);
 	name.setFillColor(sf::Color::Color(255, 165, 0));
 	name.setPosition(200.f, 200.f);
+	name.setStyle(sf::Text::Bold);
+	name.setOutlineColor(sf::Color::Black);
+	name.setOutlineThickness(5.f);
 
 	start.setFont(font2);
 	start.setString("Hit Enter to Start!");
 	start.setCharacterSize(50);
 	start.setFillColor(sf::Color::Green);
 	start.setPosition(200.f, 300.f);
+	start.setStyle(sf::Text::Bold);
+	start.setOutlineColor(sf::Color::Black);
+	start.setOutlineThickness(2.f);
 
 	scoreText.setFont(font);
 	scoreText.setCharacterSize(20);
 	scoreText.setFillColor(sf::Color::Green);
 	scoreText.setPosition(10.f, 70.f);
+	scoreText.setOutlineColor(sf::Color::Black);
+	scoreText.setOutlineThickness(2.f);
 
 	gameOver.setFont(font2);
 	gameOver.setString("GAME OVER!");
 	gameOver.setCharacterSize(50);
 	gameOver.setFillColor(sf::Color::Red);
 	gameOver.setPosition(250.f, 300.f);
+	gameOver.setStyle(sf::Text::Bold);
+	gameOver.setOutlineColor(sf::Color::Black);
+	gameOver.setOutlineThickness(5.f);
 
 	restart.setFont(font);
 	restart.setString("Hit Enter to restart");
 	restart.setCharacterSize(30);
 	restart.setFillColor(sf::Color::Magenta);
 	restart.setPosition(250.f, 400.f);
+	restart.setOutlineColor(sf::Color::Black);
+	restart.setOutlineThickness(2.f);
 
 	finalScore.setFont(font2);
-	finalScore.setCharacterSize(30);
+    finalScore.setString("Final Score: " + std::to_string(score));
+	finalScore.setCharacterSize(50);
 	finalScore.setFillColor(sf::Color::Yellow);
 	finalScore.setPosition(250.f, 50.f);
+	finalScore.setStyle(sf::Text::Bold);
+	
+	finalScore.setOutlineColor(sf::Color::Black);
+	finalScore.setOutlineThickness(2.f);
 
 	pausedText.setFont(font2);
 	pausedText.setString("PAUSED");
@@ -145,6 +165,8 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	resumeText.setCharacterSize(30);
 	resumeText.setFillColor(sf::Color::Green);
 	resumeText.setPosition(250.f, 0.f);
+	resumeText.setOutlineColor(sf::Color::Black);
+	resumeText.setOutlineThickness(2.f);
 
 	helpText.setFont(font);
 	helpText.setString("Use left and right arrow keys to move the paddle. Don't let the ball fall!");
@@ -157,17 +179,23 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	showHelp.setCharacterSize(20);
 	showHelp.setFillColor(sf::Color::White);
 	showHelp.setPosition(200.f, 400.f);
+	showHelp.setOutlineColor(sf::Color::Black);
+	showHelp.setOutlineThickness(2.f);
 
 	menuText.setFont(font);
 	menuText.setString("Press 0 to return to Menu");
 	menuText.setCharacterSize(20);
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(250.f, 500.f);
+	menuText.setOutlineColor(sf::Color::Black);
+	menuText.setOutlineThickness(2.f);
 
 	timeText.setFont(font);
 	timeText.setCharacterSize(20);
 	timeText.setFillColor(sf::Color::White);
 	timeText.setPosition(700.f, 10.f);
+	timeText.setOutlineColor(sf::Color::Black);
+	timeText.setOutlineThickness(2.f);
 
 
 	if (!bounceBuffer.loadFromFile("resources/BallCollision.wav")) {
@@ -184,7 +212,10 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
     if (!clickBuffer.loadFromFile("resources/click.wav")) {
         std::cout << "SOUND FAILED!\n";
 	}
-
+    if (!bgtexture.loadFromFile("resources/background.png")) {
+        std::cout << "TEXTURE FAILED!\n";
+	}
+    
 	bgm.setLoop(true);
     bgm.setVolume(50.f);
 
@@ -200,7 +231,11 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
   
 	deltaTime = 0.f;
 
-	gameState = GameState::StartScreen;
+	background.setTexture(bgtexture);
+
+	background.setScale(window.getSize().x / (float)bgtexture.getSize().x, (float)window.getSize().y / bgtexture.getSize().y);
+
+    gameState = GameState::StartScreen;
 
 }
 void Game:: handleEvents() {
@@ -360,7 +395,9 @@ void Game :: update() {
 
 void Game:: render() {
 
+	
     window.clear(sf::Color::Blue);
+    window.draw(background);
     if (gameState == GameState::StartScreen) {
         window.draw(name);
         window.draw(start);
