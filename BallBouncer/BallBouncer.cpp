@@ -53,6 +53,7 @@ private:
 	sf::Text helpText;
 	sf::Text showHelp;
 	sf::Text menuText;
+    sf::Text timeText;
 
 	sf::SoundBuffer bounceBuffer;
 	sf::Sound bounceSound;
@@ -64,6 +65,8 @@ private:
 	sf::Sound clickSound;
 
     sf::Music bgm;
+
+    sf::Clock clock;
    
 
 	GameState gameState;
@@ -159,6 +162,12 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(250.f, 500.f);
 
+	timeText.setFont(font);
+	timeText.setCharacterSize(20);
+	timeText.setFillColor(sf::Color::White);
+	timeText.setPosition(700.f, 10.f);
+
+
 	if (!bounceBuffer.loadFromFile("resources/BallCollision.wav")) {
         std::cout << "SOUND FAILED!\n";
     }
@@ -250,9 +259,13 @@ void Game:: handleEvents() {
                 }
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
-                gameState = GameState::StartScreen;
-                clickSound.play();
+                if (gameState == GameState::GameOver || gameState == GameState::HelpScreen) {
+                    gameState = GameState::StartScreen;
+                    clickSound.play();
+                }
             }
+
+			float elapsed = clock.getElapsedTime().asSeconds();
         }
 
     }
@@ -329,10 +342,13 @@ void Game:: render() {
         window.draw(ball);
         window.draw(paddle);
         window.draw(scoreText);
+		timeText.setString("Time: " + std::to_string(static_cast<int>(clock.getElapsedTime().asSeconds())) + "s");
+		window.draw(timeText);
     }
     else if (gameState == GameState::Paused) {
         window.draw(pausedText);
         window.draw(resumeText);
+		
     }
     else if (gameState == GameState::HelpScreen) {
         window.draw(helpText);
@@ -343,6 +359,7 @@ void Game:: render() {
         window.draw(finalScore);
         window.draw(restart);
         window.draw(menuText);
+		clock.restart(); // Reset the clock for the next game
     }
     window.display();
 
