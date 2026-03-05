@@ -60,6 +60,9 @@ private:
 	sf::SoundBuffer gameOverBuffer;
     sf::Sound gameOverSound;
 
+    sf::SoundBuffer clickBuffer;
+	sf::Sound clickSound;
+
     sf::Music bgm;
    
 
@@ -167,6 +170,9 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 	if (!bgm.openFromFile("resources/bgm.wav")) {
         std::cout << "MUSIC FAILED!\n";
     }
+    if (!clickBuffer.loadFromFile("resources/click.wav")) {
+        std::cout << "SOUND FAILED!\n";
+	}
 
 	bgm.setLoop(true);
     bgm.setVolume(50.f);
@@ -177,6 +183,9 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
 
     gameOverSound.setBuffer(gameOverBuffer);
     gameOverSound.setVolume(100.f);
+
+	clickSound.setBuffer(clickBuffer);
+	clickSound.setVolume(100.f);
   
 
 	gameState = GameState::StartScreen;
@@ -196,6 +205,7 @@ void Game:: handleEvents() {
 
                     gameState = GameState::Playing;
                     bgm.play();
+                    clickSound.play();
 
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
@@ -207,6 +217,7 @@ void Game:: handleEvents() {
 
                     gameState = GameState::Playing;
 					bgm.play();
+					clickSound.play();
                     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
                     ball.setPosition(400.f, 300.f);
                     ballVelocity = { 5.0f , 3.0f };
@@ -220,21 +231,27 @@ void Game:: handleEvents() {
                 if (gameState == GameState::Playing) {
                     gameState = GameState::Paused;
 					bgm.pause();
+                    clickSound.play();
                 }
                 else if (gameState == GameState::Paused) {
                     gameState = GameState::Playing;
+					bgm.play();
+                    clickSound.play();
                 }
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H) {
                 if (gameState == GameState::HelpScreen) {
                     gameState = GameState::StartScreen;
+                    clickSound.play();
                 }
                 else if (gameState == GameState::StartScreen) {
                     gameState = GameState::HelpScreen;
+                    clickSound.play();
                 }
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
                 gameState = GameState::StartScreen;
+                clickSound.play();
             }
         }
 
