@@ -433,6 +433,7 @@ void Game::update() {
 
             if (opponentScore < 5) {
                 opponentScore++;
+                opponentScoreText.setString("Opponent Score: " + std::to_string(opponentScore));
                 ballVelocity.y = -ballVelocity.y;
                 ball.setPosition(ball.getPosition().x, paddle.getPosition().y + 2 * ball.getRadius() + 1);
                
@@ -490,7 +491,7 @@ void Game::update() {
 				//ballVelocity.y = -std::abs(speed2 * std::cos(angle2Radians)); // Always bounce downwards
 				ball.setPosition(ball.getPosition().x, opponentPaddle.getPosition().y + paddleHeight + 1); // Position the ball just below the opponent paddle
                 //opponentScore += 10;
-                opponentScoreText.setString("Opponent Score: " + std::to_string(opponentScore));
+                
                 bounceSound.play();
             }
             
