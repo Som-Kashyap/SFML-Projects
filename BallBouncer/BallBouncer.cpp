@@ -74,7 +74,11 @@ private:
     sf::SoundBuffer clickBuffer;
 	sf::Sound clickSound;
 
+	sf::SoundBuffer opponentHitBuffer;
+	sf::Sound opponentHitSound;
+
     sf::Music bgm;
+	sf::Music applause;
 
     sf::Clock clock;
     sf::Clock deltaTimeClock;
@@ -86,7 +90,7 @@ private:
 	GameState gameState;
 };
 
-Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Ball Bouncer")
+Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Paddle Panic")
 {
 	window.setFramerateLimit(60);
 
@@ -269,8 +273,20 @@ void Game::SoundSetup() {
     if (!clickBuffer.loadFromFile("resources/click.wav")) {
         std::cout << "SOUND FAILED!\n";
     }  
+    if (!opponentHitBuffer.loadFromFile("resources/OpponentHit.wav")) {
+        std::cout << "SOUND FAILED!\n";
+	}
+	if (!applause.openFromFile("resources/applause.wav")) {
+        std::cout << "MUSIC FAILED!\n";
+    }
+	opponentHitSound.setBuffer(opponentHitBuffer);
+	opponentHitSound.setVolume(100.f);
+
     bgm.setLoop(true);
     bgm.setVolume(50.f);
+
+	applause.setLoop(false);
+	applause.setVolume(100.f);
 
     bounceSound.setBuffer(bounceBuffer);
 
@@ -317,6 +333,7 @@ void Game::handleEvents() {
             else if (gameState == GameState::Victory) {
                 gameState = GameState::Playing;
                 bgm.play();
+				applause.stop();
                 clickSound.play();
 				resetGame();
             }
@@ -400,7 +417,7 @@ void Game::update() {
 
             bounceSound.play();
 
-            score += 10;
+            //score += 10;
 
             // Increase speed slightly on each hit, up to maxspeed
             if (std::abs(ballVelocity.x) < maxspeed) {
@@ -412,10 +429,18 @@ void Game::update() {
 
         }
         // Check for game over condition
-        if (ball.getPosition().y > windowHeight) {
+        if (ball.getPosition().y > windowHeight && ballVelocity.y>0) {
 
-            gameState = GameState::GameOver;
-            gameOverSound.play();
+            if (opponentScore < 5) {
+                opponentScore++;
+                ballVelocity.y = -ballVelocity.y;
+                ball.setPosition(ball.getPosition().x, paddle.getPosition().y + 2 * ball.getRadius() + 1);
+               
+            }
+            else {
+                 gameState = GameState::GameOver;
+                gameOverSound.play();
+            }
 
         }
         // Move the paddle
@@ -434,8 +459,12 @@ void Game::update() {
         scoreText.setString("Score: " + std::to_string(score));
 
         if (ballVelocity.y < 0) { // Only move the opponent paddle when the ball is moving towards it
+
+           
+
             if (ball.getPosition().x + ball.getRadius() < opponentPaddle.getPosition().x + paddleWidth / 2.f) {
                 opponentPaddle.move(-opponentPaddleSpeed * deltaTime, 0);
+				
                 if (opponentPaddle.getPosition().x < 0) {
                     opponentPaddle.setPosition(0, opponentPaddle.getPosition().y);
                 }
@@ -447,8 +476,20 @@ void Game::update() {
                 }
             }
             if (opponentPaddle.getGlobalBounds().intersects(ball.getGlobalBounds())) {
-                ballVelocity.y = -ballVelocity.y;
-                opponentScore += 10;
+
+                float speed2 = std::sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
+                float offset = (opponentPaddle.getPosition().x + paddleWidth / 2.f) - (ball.getPosition().x + ball.getRadius());
+                float normalisedOffset = offset / (paddleWidth / 2.f);
+                float maxAngle2 = 75.f;
+                float angle2 = normalisedOffset * maxAngle2;
+                float angle2Radians = angle2 * 3.14159f / 180.f;
+
+				opponentHitSound.play();
+				ballVelocity.y = -ballVelocity.y; // Reverse vertical direction
+				//ballVelocity.x = speed2 * std::sin(angle2Radians);
+				//ballVelocity.y = -std::abs(speed2 * std::cos(angle2Radians)); // Always bounce downwards
+				ball.setPosition(ball.getPosition().x, opponentPaddle.getPosition().y + paddleHeight + 1); // Position the ball just below the opponent paddle
+                //opponentScore += 10;
                 opponentScoreText.setString("Opponent Score: " + std::to_string(opponentScore));
                 bounceSound.play();
             }
@@ -457,7 +498,25 @@ void Game::update() {
         }
             if (ball.getPosition().y <= opponentPaddle.getPosition().y + paddleHeight && ballVelocity.y < 0) {
 
+                ballVelocity.y = -ballVelocity.y;
+                //ball.setPosition(ball.getPosition().x, opponentPaddle.getPosition().y - 2 * ball.getRadius() - 1);
+                if (score < 5) {
+                    score++;
+                    
+                    applause.play();
+                    
+                }
+                else {
+                    gameState = GameState::Victory;
+                    gameOverSound.play();
+                }
+            }
+            if (score == 5 && opponentScore < score) {
                 gameState = GameState::Victory;
+                applause.play();
+            }
+            else if (opponentScore == 5 && score < opponentScore) {
+                gameState = GameState::GameOver;
                 gameOverSound.play();
             }
 
@@ -517,6 +576,7 @@ void Game::resetGame() {
     ballVelocity = { 500.f, -300.f };
     paddle.setPosition((windowWidth - paddleWidth) / 2.f, windowHeight - paddleHeight - 10.f);
     score = 0;
+    opponentScore = 0;
     bgm.play();
 
 	opponentPaddle.setPosition((windowWidth - paddleWidth) / 2.f, 10.f);
