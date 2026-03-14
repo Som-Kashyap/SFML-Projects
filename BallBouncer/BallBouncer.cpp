@@ -4,6 +4,7 @@
 
 enum class GameState
 {
+    AboutGame,
     StartScreen,
     Playing,
     Paused,
@@ -129,7 +130,7 @@ Game::Game() : window(sf::VideoMode(windowWidth, windowHeight), "Paddle Panic")
 
     background.setScale(window.getSize().x / (float)bgtexture.getSize().x, (float)window.getSize().y / bgtexture.getSize().y);
 
-    gameState = GameState::StartScreen;
+    gameState = GameState::AboutGame;
 
 }
 
@@ -146,7 +147,7 @@ void Game::UI() {
    
 
     name.setFont(font2);
-    name.setString("BALL BOUNCER");
+    name.setString("PADDLE PANIC!");
     name.setCharacterSize(50);
     name.setFillColor(sf::Color::Color(255, 165, 0));
     name.setPosition(200.f, 200.f);
@@ -333,48 +334,56 @@ void Game::handleEvents() {
             else if (gameState == GameState::Victory) {
                 gameState = GameState::Playing;
                 bgm.play();
-				applause.stop();
+                applause.stop();
                 clickSound.play();
-				resetGame();
+                resetGame();
             }
+        }
 
-
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
-                if (gameState == GameState::Playing) {
-                    gameState = GameState::Paused;
-                    bgm.pause();
-                    clickSound.play();
-                }
-                else if (gameState == GameState::Paused) {
-                    gameState = GameState::Playing;
-                    bgm.play();
-                    clickSound.play();
-                }
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
+            if (gameState == GameState::Playing) {
+                gameState = GameState::Paused;
+                bgm.pause();
+                clickSound.play();
             }
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H) {
-                if (gameState == GameState::HelpScreen) {
-                    gameState = GameState::StartScreen;
-                    clickSound.play();
-                }
-                else if (gameState == GameState::StartScreen) {
-                    gameState = GameState::HelpScreen;
-                    clickSound.play();
-                }
+            else if (gameState == GameState::Paused) {
+                gameState = GameState::Playing;
+                bgm.play();
+                clickSound.play();
             }
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
-                if (gameState == GameState::GameOver || gameState == GameState::HelpScreen || gameState == GameState::Victory) {
-                    gameState = GameState::StartScreen;
-                    clickSound.play();
-                }
-
+        }
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H) {
+            if (gameState == GameState::HelpScreen) {
+                gameState = GameState::StartScreen;
+                clickSound.play();
             }
-
-            float elapsed = clock.getElapsedTime().asSeconds();
+            else if (gameState == GameState::StartScreen) {
+                gameState = GameState::HelpScreen;
+                clickSound.play();
+            }
+        }
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
+            if (gameState == GameState::GameOver || gameState == GameState::HelpScreen || gameState == GameState::Victory) {
+                gameState = GameState::StartScreen;
+                clickSound.play();
+            }
 
         }
 
+
+
+        float elapsed = clock.getElapsedTime().asSeconds();
+
+
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+            if (gameState == GameState::AboutGame) {
+                gameState = GameState::StartScreen;
+                clickSound.play();
+            }
+        }
     }
 }
+
 
 void Game::update() {
 
@@ -458,6 +467,7 @@ void Game::update() {
             }
         }
         scoreText.setString("Score: " + std::to_string(score));
+		opponentScoreText.setString("Opponent Score: " + std::to_string(opponentScore));
 
         if (ballVelocity.y < 0) { // Only move the opponent paddle when the ball is moving towards it
 
