@@ -5,6 +5,7 @@ enum gameState{
 
 	Start,
 	Playing,
+	ReLaunchBall,
 
 };
 
@@ -63,30 +64,49 @@ void Game :: HandleEvents() {
 				window.close();
 			}
 		}
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
+		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
 
 			if (GameState == gameState::Start) {
+
 				GameState = gameState::Playing;
+				
+				}
+	
+			}
+		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
+
+			if (GameState == gameState::Playing) {
+				GameState = gameState::ReLaunchBall;
+
+				velocity = sf::Vector2f(5.f, 4.f);
 				velocity.x = -velocity.x;
 				Update();
 			}
-			
+			else if (GameState == gameState::ReLaunchBall) {
+				velocity = sf::Vector2f(-40.f, 100.f);
+				Update();
+			}
+
 		}
 		else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::RControl) {
-			if (GameState == gameState::Start) {
-				GameState = gameState::Playing;
+			if (GameState == gameState::Playing) {
+				GameState = gameState::ReLaunchBall;
+				velocity = sf::Vector2f(5.f, 4.f);
 				Update();
 			}
-			else if (GameState == gameState::Playing) {
-				//ball.move(velocity * deltaTime);
+			else if (GameState == gameState::ReLaunchBall) {
+				velocity = sf::Vector2f(40.f, 100.f);
 				Update();
 			}
+
 		}
+		
+		
 	}
 }
 void Game :: Update() {
 
-	if (GameState == gameState::Playing) {
+	if (GameState == gameState::ReLaunchBall) {
 
 		//velocity.x *= 0.99f; // Simulate friction
 
@@ -97,11 +117,11 @@ void Game :: Update() {
 
 		if (ball.getPosition().x <= 0 || ball.getPosition().x + ball.getRadius() * 2 >= windowWidth) {
 
-			velocity.x = -velocity.x*0.7;
+			velocity.x = -velocity.x*0.9;
 		}
 		if (ball.getPosition().y <= 0 || ball.getPosition().y + ball.getRadius()*2 >= windowHeight ){
 			ball.setPosition(ball.getPosition().x, windowHeight - (ball.getRadius() * 2)-0.1);
-			velocity.y = -velocity.y*0.7;
+			velocity.y = -velocity.y*0.9;
 		}
 	}
 
@@ -109,7 +129,7 @@ void Game :: Update() {
 void Game :: Render() {
 	window.clear();
 
-	if (GameState == gameState::Playing) {
+	if (GameState == gameState::Playing || GameState == gameState::ReLaunchBall ) {
 		window.draw(ball);
 	}
 	window.display();
