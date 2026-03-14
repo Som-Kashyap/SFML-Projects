@@ -51,6 +51,8 @@ private:
     int score;
 	int opponentScore;
 
+    sf::Text aboutGameText;
+	sf::Text gamestartText;
 	sf::Text name;
 	sf::Text start;
 	sf::Text scoreText;
@@ -58,6 +60,7 @@ private:
 	sf::Text restart;
 	sf::Text finalScore;
 	sf::Text pausedText;
+	sf::Text returnMenuText;
 	sf::Text resumeText;
 	sf::Text helpText;
 	sf::Text showHelp;
@@ -255,6 +258,28 @@ void Game::UI() {
 	opponentScoreText.setOutlineColor(sf::Color::Black);
 	opponentGameOver.setOutlineThickness(2.f);
 
+	aboutGameText.setFont(font2);
+    aboutGameText.setString("Som Kashyap presents : Paddle Panic! A thrilling game of reflexes and precision.");
+	aboutGameText.setCharacterSize(20);
+	aboutGameText.setFillColor(sf::Color::White);
+	aboutGameText.setPosition(10.f, 250.f);
+	aboutGameText.setStyle(sf::Text::Bold);
+	aboutGameText.setOutlineColor(sf::Color::Blue);
+	aboutGameText.setOutlineThickness(2.f);
+
+	gamestartText.setFont(font);
+	gamestartText.setString("(Hit SpaceBar to Start!)");
+	gamestartText.setCharacterSize(20);
+	gamestartText.setFillColor(sf::Color::Green);
+	gamestartText.setPosition(250.f, 400.f);
+	gamestartText.setOutlineColor(sf::Color::Black);
+
+	returnMenuText.setFont(font);
+	returnMenuText.setString("Press 0 to return to Menu");
+	returnMenuText.setCharacterSize(20);
+	returnMenuText.setFillColor(sf::Color::Red);
+	returnMenuText.setPosition(250.f, 500.f);
+	returnMenuText.setOutlineColor(sf::Color::Black);
 
 }
 void Game::SoundSetup() {
@@ -365,6 +390,11 @@ void Game::handleEvents() {
         if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Num0) {
             if (gameState == GameState::GameOver || gameState == GameState::HelpScreen || gameState == GameState::Victory) {
                 gameState = GameState::StartScreen;
+                clickSound.play();
+            }
+			else if (gameState == GameState::Paused) {
+                gameState = GameState::StartScreen;
+                bgm.stop();
                 clickSound.play();
             }
 
@@ -537,8 +567,12 @@ void Game::update() {
 void Game:: render() {
 
 	
-    window.clear(sf::Color::Blue);
-    window.draw(background);
+    window.clear(sf::Color::Black);
+
+	if ( gameState != GameState::AboutGame ) {
+        window.draw(background);
+    }
+   
     if (gameState == GameState::StartScreen) {
         window.draw(name);
         window.draw(start);
@@ -556,6 +590,7 @@ void Game:: render() {
     else if (gameState == GameState::Paused) {
         window.draw(pausedText);
         window.draw(resumeText);
+		window.draw(menuText);
 		
     }
     else if (gameState == GameState::HelpScreen) {
@@ -576,6 +611,10 @@ void Game:: render() {
         window.draw(restart);
         window.draw(menuText);
     }
+    if ( gameState == GameState::AboutGame) {
+        window.draw(aboutGameText);
+		window.draw(gamestartText);
+	}
 
     window.display();
 
