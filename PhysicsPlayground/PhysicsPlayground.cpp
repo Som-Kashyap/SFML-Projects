@@ -1,179 +1,136 @@
 #include<SFML/Graphics.hpp>
+#include<ctime>
+#include<cstdlib>
 #include<iostream>
 
-enum gameState{
+enum class GameState {
 
-	Start,
+	StartScreen,
 	Playing,
-	ReLaunchBall,
+	Paused
+};
+
+class Ball {
+
+public:
+	Ball(sf::Vector2f);
+	const float ballradius = 20.f;
+	sf::CircleShape shape;
+	sf::Vector2f ballvelocity;
+	void Update(float deltaTime);
+private:
+
 
 };
 
 class Game {
 
-private:
-	sf::RenderWindow window;
-	const int windowWidth = 800;
-	const int windowHeight = 600;
-	sf::CircleShape ball;
-	sf::ConvexShape triangle;
-	
-	sf::RectangleShape Incline1;
-	sf::Vector2f velocity;
-
-	sf::Time deltaTime;
-
-	gameState GameState;
-
-private:
-
-	void HandleEvents();
-	void Update();
-	void Render();
-	void Triangle();
-	//void textSetup();
-	//void AudioSetup();
-
 public:
 	Game();
-	void RunGame();
+	std::vector<Ball>balls;
+	void rungame();
+private:
+	void update(float deltaTime);
+	void HandleEvents();
+	void render();
+	sf::CircleShape circle;
+
+ sf::Clock deltaTimeclock;
+	 float deltaTime;
+	
+	 const int windowWidth = 800;
+	 const int windowHeight = 600;
+	  sf::RenderWindow window;
 };
 
-Game :: Game() : window(sf::VideoMode(800, 600), "Physics Playground") {
 
-	ball.setRadius(20.f);
-	ball.setFillColor(sf::Color::Red);
-	ball.setPosition(400.f, 300.f);
-	const int Incline1Length = 300;
-	const int Incline1Width = 5;
-	Incline1.setSize(sf::Vector2f(Incline1Length, Incline1Width));
-	Incline1.setPosition(300.f, 400.f);
-	Incline1.setRotation(30.f);
-	Incline1.setFillColor(sf::Color::White);
+Game:: Game() : window(sf::VideoMode(windowWidth , windowHeight) , "Physics Playground")  {
 
-	velocity = sf::Vector2f(5.f, 4.f);
-
-	GameState=gameState::Start;
-	Triangle();
 	
-	//textSetup();
-	//AudioSetup();
-}
-void Game::Triangle() {
-	
-	triangle.setPointCount(3);
-	triangle.setPoint(0, { 400.f, 100.f });
-	triangle.setPoint(1, { 300.f, 300.f });
-	triangle.setPoint(2, { 500.f, 300.f });
-	triangle.setFillColor(sf::Color::Yellow);
+	window.setFramerateLimit(60);
 
 }
 
-void Game :: HandleEvents() {
+Ball::Ball(sf::Vector2f mousepos) {
+
+	shape.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
+	shape.setRadius(ballradius);
+	shape.setPosition(mousepos);
+	ballvelocity.x = 0.f;
+	ballvelocity.y = 500.f;
+
+}
+void Game::update(float deltaTime) {
+
+	for (auto& ball : balls) {
+		ball.Update(deltaTime);
+	}
+}
+
+void Ball::Update(float deltaTime) {
+
+		shape.move(ballvelocity*deltaTime);
+		ballvelocity.y += 980 * deltaTime;
+		
+		if (shape.getPosition().x + (shape.getRadius()) * 2.0f >= 800 || shape.getPosition().x < 0) {
+			ballvelocity = -ballvelocity * 0.9f;
+		}
+		if (shape.getPosition().y < 0 || shape.getPosition().y + (shape.getRadius()) * 2.0f >= 600) {
+			ballvelocity = -ballvelocity * 0.9f;
+		}
+}
+
+void Game:: HandleEvents() {
 
 	sf::Event event;
+
 	while (window.pollEvent(event)) {
-		if (event.type == sf::Event::Closed) {
+
+		if (event.type==(sf::Event::Closed)) {
 			window.close();
 		}
 
-		if (event.type == sf::Event::KeyPressed) {
-			if (event.key.code == sf::Keyboard::Escape) {
-				window.close();
-			}
-		}
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
-
-			if (GameState == gameState::Start) {
-
-				GameState = gameState::Playing;
+		if (event.type == sf::Event::MouseButtonPressed) {
+			if (event.mouseButton.button == sf::Mouse::Left) {
 				
-				}
-	
+				sf::Vector2f mousepos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+				balls.emplace_back(mousepos);
 			}
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
-
-			if (GameState == gameState::Playing) {
-				GameState = gameState::ReLaunchBall;
-
-				velocity = sf::Vector2f(5.f, 4.f);
-				velocity.x = -velocity.x;
-				Update();
-			}
-			else if (GameState == gameState::ReLaunchBall) {
-				velocity = sf::Vector2f(-40.f, 100.f);
-				Update();
-			}
-
-		}
-		else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::RControl) {
-			if (GameState == gameState::Playing) {
-				GameState = gameState::ReLaunchBall;
-				velocity = sf::Vector2f(5.f, 4.f);
-				Update();
-			}
-			else if (GameState == gameState::ReLaunchBall) {
-				velocity = sf::Vector2f(40.f, 100.f);
-				Update();
-			}
-
-		}
-		
-		
-	}
-}
-void Game :: Update() {
-
-	if (GameState == gameState::ReLaunchBall) {
-
-		//velocity.x *= 0.99f; // Simulate friction
-
-		const float deltaTime = 1.f / 60.f;
-
-		velocity.y += 9.f * deltaTime;
-		ball.move(velocity * deltaTime);
-
-		if (ball.getPosition().x <= 0 || ball.getPosition().x + ball.getRadius() * 2 >= windowWidth) {
-
-			velocity.x = -velocity.x*0.9;
-		}
-		if (ball.getPosition().y <= 0 || ball.getPosition().y + ball.getRadius()*2 >= windowHeight ){
-			ball.setPosition(ball.getPosition().x, windowHeight - (ball.getRadius() * 2)-0.1);
-			velocity.y = -velocity.y*0.9;
-		}
-
-		if (ball.getGlobalBounds().intersects(Incline1.getGlobalBounds())) {
-			velocity.y = -velocity.y * 0.9;
-		}
-		if (ball.getGlobalBounds().intersects(triangle.getGlobalBounds())) {
-			velocity.y = -velocity.y * 0.9;
 		}
 	}
 
-
 }
-void Game :: Render() {
-	window.clear();
 
-	if (GameState == gameState::Playing || GameState == gameState::ReLaunchBall ) {
-		
-		window.draw(Incline1);
-		window.draw(triangle);
-		window.draw(ball);
+void Game::render() {
+
+	window.clear(sf::Color::White);
+
+	for (auto& ball : balls) {
+		window.draw(ball.shape);
 	}
 	window.display();
 }
-void Game::RunGame(){
-	while (window.isOpen()) {
-		HandleEvents();
-		Update();
-		Render();
+
+	void Game::rungame()
+	{
+		while (window.isOpen())
+		{
+			while (window.isOpen())
+			{
+				float dt = deltaTimeclock.restart().asSeconds();
+
+				HandleEvents();
+				update(dt);
+				render();
+			}
+
+			window.display();
+		}
 	}
-}
+
+
 int main() {
+
 	Game game;
-
-	game.RunGame();
-
-	return 0;
+	game.rungame();
 }
