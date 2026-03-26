@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PhysicsPlayground.cpp">
+    <ClCompile Include="Physics-Playground.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
