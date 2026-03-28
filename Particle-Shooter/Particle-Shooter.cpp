@@ -5,7 +5,10 @@
 
 class Particles{
 
-private:
+public:
+	sf::CircleShape bullet;
+	sf::Vector2f bulletVelocity;
+	void Update(float deltaTime);
 	void spawnParticles();
 };
 
@@ -17,14 +20,14 @@ public:
 	sf::RenderWindow window;
 	sf::RectangleShape cannon;
 	sf::Vector2f cannonVelocity;
+	std::vector<Particles>bullets;
+	sf::Clock deltaTimeClock;
+	float deltaTime = 0.f;
 
 	const float width = 20.f, height = 80.f;
 	void rungame();
 	Game();
 private:
-	
-	sf::Clock deltaTimeClock;
-	float deltaTime = 0.f;
 	void update();
 	void handleEvents();
 	void render();
@@ -39,6 +42,18 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	 cannonVelocity= {500.f , 0.f };
 	cannon.setFillColor(sf::Color::Green);
 	cannon.setPosition(400.f, 400.f);
+}
+void Particles::spawnParticles() {
+
+	bulletVelocity = { 0,-500.0 };
+	bullet.setFillColor(sf::Color::White);
+	bullet.setRadius(5.0);
+
+}
+
+void Particles::Update(float deltaTime) {
+
+	bullet.move(bulletVelocity * deltaTime);
 }
 void Game::handleEvents() {
 
@@ -55,6 +70,13 @@ void Game::handleEvents() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 			cannon.move(cannonVelocity * (deltaTime));
 		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+			Particles newBullet;
+			newBullet.spawnParticles();
+			newBullet.bullet.setPosition(cannon.getPosition().x + (width / 2.0), cannon.getPosition().y);
+			bullets.emplace_back(newBullet);
+		}
+
 	}
 }
 void Game::render() {
@@ -63,6 +85,9 @@ void Game::render() {
 
 		window.draw(cannon);
 
+		for (auto& val : bullets) {
+			window.draw(val.bullet);
+		}
 		window.display();
 }
 void Game::update() {
@@ -73,6 +98,10 @@ void Game::update() {
 	if (cannon.getPosition().x < 0) {
 		cannon.setPosition(0, cannon.getPosition().y);
 	}
+
+	for (auto& bullet : bullets) {
+		bullet.Update(deltaTime);
+	}
 }
 
 void Game::rungame() {
@@ -82,7 +111,6 @@ void Game::rungame() {
 		handleEvents();
 		update();
 		render();
-
 	}
 }
 
