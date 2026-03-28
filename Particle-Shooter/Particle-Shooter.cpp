@@ -53,9 +53,9 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	cannon.setSize(sf::Vector2f(20.f, 80.f));
 	cannonVelocity = { 500.f , 0.f };
 	cannon.setFillColor(sf::Color::Green);
-	cannon.setPosition(400.f, 400.f);
+	cannon.setPosition(400.f, 520.f);
 
-	for (size_t i = 0; i < enemyCount; i++) {
+	for(size_t i = 0 ;i < enemyCount; i++) {
 		Enemy enemy;
 		enemies.emplace_back(enemy);
 	}
@@ -67,7 +67,7 @@ Enemy::Enemy() {
 	const float enemyWidth = 40.f, enemyHeight = 40.f;
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
 	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
-	enemy.setPosition(static_cast<float>(std::rand() %800 - static_cast<int>(enemyWidth - 1)) , static_cast<float>(std::rand()%-100));
+	enemy.setPosition(static_cast<float>(std::rand() %800 - static_cast<int>(enemyWidth - 1)) , static_cast<float>(std::rand()%-100+0));
 
 }
 void Particles::spawnParticles() {
@@ -136,6 +136,21 @@ void Game::update() {
 				i--; // adjust index after erase
 				break;
 			}
+		}
+	}
+	bullets.erase(
+		std::remove_if(bullets.begin(), bullets.end(),
+			[](Particles& b) {
+				return b.bullet.getPosition().y < 0;
+			}),
+		bullets.end()
+	);
+
+	if (enemies.size() == 0) {
+
+		for (size_t i = 0; i < enemyCount; i++) {
+			Enemy enemy;
+			enemies.emplace_back(enemy);
 		}
 	}
 }
