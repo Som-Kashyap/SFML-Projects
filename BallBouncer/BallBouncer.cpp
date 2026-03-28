@@ -147,8 +147,6 @@ void Game::UI() {
         std::cout << "FONT FAILED!\n";
     }
 
-   
-
     name.setFont(font2);
     name.setString("PADDLE PANIC!");
     name.setCharacterSize(50);
@@ -275,10 +273,10 @@ void Game::UI() {
 	gamestartText.setOutlineColor(sf::Color::Black);
 
 	returnMenuText.setFont(font);
-	returnMenuText.setString("Press 0 to return to Menu");
+	returnMenuText.setString("(Press 0 to return to Menu)");
 	returnMenuText.setCharacterSize(20);
 	returnMenuText.setFillColor(sf::Color::Red);
-	returnMenuText.setPosition(250.f, 500.f);
+	returnMenuText.setPosition(250.f, 0.f);
 	returnMenuText.setOutlineColor(sf::Color::Black);
 
 }

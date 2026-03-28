@@ -20,7 +20,6 @@ public:
 	void Update(float deltaTime);
 private:
 
-
 };
 
 class Game {
@@ -64,6 +63,20 @@ void Game::update(float deltaTime) {
 
 	for (auto& ball : balls) {
 		ball.Update(deltaTime);
+	}
+
+	for (size_t i = 0; i < balls.size(); i++) {
+		for (size_t j = i + 1; j < balls.size(); j++) {
+			
+			float dx = abs(balls[i].shape.getPosition().x - balls[j].shape.getPosition().x);
+			float dy = abs(balls[i].shape.getPosition().y - balls[j].shape.getPosition().y);
+			float distance = (dx * dx + dy * dy);
+
+			if (2.0 * (balls[i].shape.getRadius()) > distance) {
+				balls[i].ballvelocity *= -0.9f;
+				balls[j].ballvelocity *= -0.9f;
+			}
+		}
 	}
 }
 
@@ -115,15 +128,14 @@ void Game::rungame()
 {
 	while (window.isOpen())
 	{
-		while (window.isOpen())
-		{
+		while (window.isOpen()) {
 			float dt = deltaTimeclock.restart().asSeconds();
 
 			HandleEvents();
 			update(dt);
 			render();
-		}
 
+		}
 		window.display();
 	}
 }

@@ -73,7 +73,7 @@ int main() {
                 ball.velocity.y = -ball.velocity.y*0.9;
 
             ball.shape.move(ball.velocity);
-            ball.velocity.y += 0.9f;
+            ball.velocity.y += 0.09f;
 
         }
 
