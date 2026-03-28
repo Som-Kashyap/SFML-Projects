@@ -14,9 +14,11 @@ public:
 
 class Enemy {
 public:
-	//Enemy();
-	
+	Enemy();
+	sf::Vector2f enemyVelocity;
+	sf::RectangleShape enemy;
 	void createEnemy();
+	void update(float deltaTime);
 };
 
 class Game {
@@ -27,13 +29,12 @@ public:
 	sf::RenderWindow window;
 	sf::RectangleShape cannon;
 	sf::Vector2f cannonVelocity;
+	std::vector<Enemy>enemies;
+	const int enemyCount = 5;
 	std::vector<Particles>bullets;
 	sf::Clock deltaTimeClock;
 	float deltaTime = 0.f;
 
-	const float enemyWidth = 40.f, enemyHeight = 120;
-	sf::RectangleShape enemy;
-	bool draw = true;
 
 	const float width = 20.f, height = 80.f;
 	void rungame();
@@ -46,19 +47,28 @@ private:
 };
 
 Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter") {
-	
+
 	window.setFramerateLimit(60);
 
-	cannon.setSize(sf::Vector2f(20.f,80.f));
-	 cannonVelocity= {500.f , 0.f };
+	cannon.setSize(sf::Vector2f(20.f, 80.f));
+	cannonVelocity = { 500.f , 0.f };
 	cannon.setFillColor(sf::Color::Green);
 	cannon.setPosition(400.f, 400.f);
 
-	//enemy
-	
-	enemy.setFillColor(sf::Color::Red);
+	for (size_t i = 0; i < enemyCount; i++) {
+		Enemy enemy;
+		enemies.emplace_back(enemy);
+	}
+
+}
+Enemy::Enemy() {
+
+	 enemyVelocity = { 0 , 40.f };
+	const float enemyWidth = 40.f, enemyHeight = 40.f;
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
-	enemy.setPosition(300.f, 100.f);
+	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
+	enemy.setPosition(static_cast<float>(std::rand() %800 - static_cast<int>(enemyWidth - 1)) , static_cast<float>(std::rand()%-100));
+
 }
 void Particles::spawnParticles() {
 
@@ -73,11 +83,12 @@ void Particles::Update(float deltaTime) {
 	bullet.move(bulletVelocity * deltaTime);
 }
 
-//Enemy::Enemy(){
+void Enemy::update(float deltaTime) {
 
-	
+	enemy.move(enemyVelocity * deltaTime);
 
-//}
+}
+
 void Game::handleEvents() {
 
 	sf::Event event;
@@ -102,20 +113,6 @@ void Game::handleEvents() {
 
 	}
 }
-void Game::render() {
-
-		window.clear();
-
-		if (draw == true) {
-			window.draw(enemy);
-		}
-		window.draw(cannon);
-
-		for (auto& val : bullets) {
-			window.draw(val.bullet);
-		}
-		window.display();
-}
 void Game::update() {
 
 	if (cannon.getPosition().x + width > windowWidth) {
@@ -128,12 +125,30 @@ void Game::update() {
 	for (auto& bullet : bullets) {
 		bullet.Update(deltaTime);
 	}
-	for (auto& bullet : bullets) {
-		if (bullet.bullet.getGlobalBounds().intersects(enemy.getGlobalBounds())) {
-			draw = false;
-		}
+
+	for (auto& enemy : enemies) {
+		enemy.update(deltaTime);
 	}
+
 }
+
+void Game::render() {
+
+		window.clear();
+
+		window.draw(cannon);
+	
+		for (auto& val : bullets) {
+			window.draw(val.bullet);
+		}
+
+		for (auto& enemy : enemies) {
+			window.draw(enemy.enemy);
+		}
+		
+		window.display();
+}
+
 
 void Game::rungame() {
 
