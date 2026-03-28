@@ -12,6 +12,13 @@ public:
 	void spawnParticles();
 };
 
+class Enemy {
+public:
+	//Enemy();
+	
+	void createEnemy();
+};
+
 class Game {
 
 public:
@@ -23,6 +30,10 @@ public:
 	std::vector<Particles>bullets;
 	sf::Clock deltaTimeClock;
 	float deltaTime = 0.f;
+
+	const float enemyWidth = 40.f, enemyHeight = 120;
+	sf::RectangleShape enemy;
+	bool draw = true;
 
 	const float width = 20.f, height = 80.f;
 	void rungame();
@@ -42,6 +53,12 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	 cannonVelocity= {500.f , 0.f };
 	cannon.setFillColor(sf::Color::Green);
 	cannon.setPosition(400.f, 400.f);
+
+	//enemy
+	
+	enemy.setFillColor(sf::Color::Red);
+	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
+	enemy.setPosition(300.f, 100.f);
 }
 void Particles::spawnParticles() {
 
@@ -55,6 +72,12 @@ void Particles::Update(float deltaTime) {
 
 	bullet.move(bulletVelocity * deltaTime);
 }
+
+//Enemy::Enemy(){
+
+	
+
+//}
 void Game::handleEvents() {
 
 	sf::Event event;
@@ -83,6 +106,9 @@ void Game::render() {
 
 		window.clear();
 
+		if (draw == true) {
+			window.draw(enemy);
+		}
 		window.draw(cannon);
 
 		for (auto& val : bullets) {
@@ -101,6 +127,11 @@ void Game::update() {
 
 	for (auto& bullet : bullets) {
 		bullet.Update(deltaTime);
+	}
+	for (auto& bullet : bullets) {
+		if (bullet.bullet.getGlobalBounds().intersects(enemy.getGlobalBounds())) {
+			draw = false;
+		}
 	}
 }
 
