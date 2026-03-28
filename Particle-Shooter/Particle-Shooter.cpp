@@ -129,7 +129,15 @@ void Game::update() {
 	for (auto& enemy : enemies) {
 		enemy.update(deltaTime);
 	}
-
+	for (size_t i = 0; i < enemies.size(); i++) {
+		for (auto& bullet : bullets) {
+			if (enemies[i].enemy.getGlobalBounds().intersects(bullet.bullet.getGlobalBounds())) {
+				enemies.erase(enemies.begin() + i);
+				i--; // adjust index after erase
+				break;
+			}
+		}
+	}
 }
 
 void Game::render() {
