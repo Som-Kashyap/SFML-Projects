@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Particle-Shooter.vcxproj" />
+  <Project Path="Particle-Shooter.vcxproj" Id="8af11462-29bb-4897-8e5f-ef67b3270178" />
 </Solution>

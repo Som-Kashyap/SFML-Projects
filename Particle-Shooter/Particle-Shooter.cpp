@@ -18,7 +18,7 @@ public:
 	sf::Vector2f enemyVelocity;
 	sf::RectangleShape enemy;
 	void createEnemy();
-	void update(float deltaTime);
+	void update(float deltaTime , bool respawn);
 };
 
 class Game {
@@ -30,12 +30,13 @@ public:
 	sf::RectangleShape cannon;
 	sf::Vector2f cannonVelocity;
 	std::vector<Enemy>enemies;
-	const int enemyCount = 5;
+	const int enemyCount = 10;
 	std::vector<Particles>bullets;
 	sf::Clock deltaTimeClock;
 	float deltaTime = 0.f;
-
-
+	bool respawn;
+	sf::Clock timeClock;
+	int time = 0;
 	const float width = 20.f, height = 80.f;
 	void rungame();
 	Game();
@@ -59,15 +60,17 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 		Enemy enemy;
 		enemies.emplace_back(enemy);
 	}
-
+	time = timeClock.getElapsedTime().asSeconds();
 }
 Enemy::Enemy() {
-
-	 enemyVelocity = { 0 , 40.f };
+	//if (respawn) {
+	//	enemyVelocity.y += 900 * deltaTime;
+	//}
+	 enemyVelocity = { 0 , static_cast<float>(rand()%50+10)};
 	const float enemyWidth = 40.f, enemyHeight = 40.f;
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
 	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
-	enemy.setPosition(static_cast<float>(std::rand() %800 - static_cast<int>(enemyWidth - 1)) , static_cast<float>(std::rand()%-100+0));
+	enemy.setPosition(static_cast<float>(std::rand() %760) , static_cast<float>(std::rand()%-100));
 
 }
 void Particles::spawnParticles() {
@@ -83,7 +86,7 @@ void Particles::Update(float deltaTime) {
 	bullet.move(bulletVelocity * deltaTime);
 }
 
-void Enemy::update(float deltaTime) {
+void Enemy::update(float deltaTime , bool respawn) {
 
 	enemy.move(enemyVelocity * deltaTime);
 
@@ -104,7 +107,7 @@ void Game::handleEvents() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 			cannon.move(cannonVelocity * (deltaTime));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
 			Particles newBullet;
 			newBullet.spawnParticles();
 			newBullet.bullet.setPosition(cannon.getPosition().x + (width / 2.0), cannon.getPosition().y);
@@ -127,13 +130,14 @@ void Game::update() {
 	}
 
 	for (auto& enemy : enemies) {
-		enemy.update(deltaTime);
+		enemy.update(deltaTime , respawn);
 	}
 	for (size_t i = 0; i < enemies.size(); i++) {
-		for (auto& bullet : bullets) {
-			if (enemies[i].enemy.getGlobalBounds().intersects(bullet.bullet.getGlobalBounds())) {
+		for (size_t j = 0; j < bullets.size(); j++ ) {
+			if (enemies[i].enemy.getGlobalBounds().intersects(bullets[j].bullet.getGlobalBounds())) {
 				enemies.erase(enemies.begin() + i);
 				i--; // adjust index after erase
+				bullets.erase(bullets.begin() + j);
 				break;
 			}
 		}
@@ -147,11 +151,15 @@ void Game::update() {
 	);
 
 	if (enemies.size() == 0) {
-
+		respawn = true;
 		for (size_t i = 0; i < enemyCount; i++) {
 			Enemy enemy;
 			enemies.emplace_back(enemy);
 		}
+
+	}
+	else {
+		respawn = false;
 	}
 }
 
