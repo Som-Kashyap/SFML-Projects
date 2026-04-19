@@ -21,6 +21,42 @@ public:
 	void update(float deltaTime , bool respawn);
 };
 
+class AttackingEnemy {
+
+	public:
+		std::vector<AttackingEnemy>attackingEnemies;
+		sf::Clock attackingEnemyClock;
+		float attackingEnemyTime = 0;
+	AttackingEnemy();
+	sf::Vector2f attackingEnemyVelocity;
+	sf::RectangleShape attackingEnemy;
+	void createAttackingEnemy(float deltaTime);
+	void update(float deltaTime);
+
+};
+
+class AttackingEnemyManager {
+public:
+	std::vector<AttackingEnemy> attackingEnemies;
+	sf::Clock attackingEnemyClock;
+	float attackingEnemyTime = 0;
+
+	void createAttackingEnemy(float deltaTime) {
+		attackingEnemyTime = attackingEnemyClock.getElapsedTime().asSeconds();
+
+		if (attackingEnemyTime >= 5) {
+			AttackingEnemy newAttackingEnemy;
+			attackingEnemies.emplace_back(newAttackingEnemy);
+			attackingEnemyClock.restart();
+		}
+	}
+	void update(float deltaTime) {
+		createAttackingEnemy(deltaTime);
+		for (auto& enemy : attackingEnemies) {
+			enemy.attackingEnemy.move(enemy.attackingEnemyVelocity * deltaTime);
+		}
+	}
+};
 class Game {
 
 public:
@@ -39,6 +75,7 @@ public:
 	int time = 0;
 	const float width = 20.f, height = 80.f;
 	void rungame();
+	AttackingEnemy attackingEnemyManager;
 	Game();
 private:
 	void update();
@@ -62,7 +99,9 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	}
 	time = timeClock.getElapsedTime().asSeconds();
 }
+
 Enemy::Enemy() {
+
 	//if (respawn) {
 	//	enemyVelocity.y += 900 * deltaTime;
 	//}
@@ -71,6 +110,34 @@ Enemy::Enemy() {
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
 	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
 	enemy.setPosition(static_cast<float>(std::rand() %760) , static_cast<float>(std::rand()%-100));
+
+}
+
+AttackingEnemy::AttackingEnemy() {
+
+	attackingEnemyVelocity = { 0 , static_cast<float>(rand() % 50 + 10) };
+	const float enemyWidth = 100.f, enemyHeight = 100.f;
+	attackingEnemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
+	attackingEnemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
+	attackingEnemy.setPosition(static_cast<float>(std::rand() % 760), static_cast<float>(std::rand() % -100));
+
+}
+
+void AttackingEnemy::createAttackingEnemy(float deltaTime) {
+
+	attackingEnemyTime = attackingEnemyClock.getElapsedTime().asSeconds();
+
+	if (attackingEnemyTime >= 5) {
+		AttackingEnemy newAttackingEnemy;
+		attackingEnemies.emplace_back(newAttackingEnemy);
+		attackingEnemyClock.restart();
+	}
+}
+
+void AttackingEnemy::update(float deltaTime) {
+	
+	createAttackingEnemy(deltaTime);
+	attackingEnemy.move(attackingEnemyVelocity * deltaTime);
 
 }
 void Particles::spawnParticles() {
@@ -132,6 +199,9 @@ void Game::update() {
 	for (auto& enemy : enemies) {
 		enemy.update(deltaTime , respawn);
 	}
+	
+	attackingEnemyManager.update(deltaTime);
+
 	for (size_t i = 0; i < enemies.size(); i++) {
 		for (size_t j = 0; j < bullets.size(); j++ ) {
 			if (enemies[i].enemy.getGlobalBounds().intersects(bullets[j].bullet.getGlobalBounds())) {
@@ -161,6 +231,17 @@ void Game::update() {
 	else {
 		respawn = false;
 	}
+
+	for (size_t i = 0; i < attackingEnemyManager.attackingEnemies.size(); i++) {
+		for (size_t j = 0; j < bullets.size(); j++) {
+			if (attackingEnemyManager.attackingEnemies[i].attackingEnemy.getGlobalBounds().intersects(bullets[j].bullet.getGlobalBounds())) {
+				attackingEnemyManager.attackingEnemies.erase(attackingEnemyManager.attackingEnemies.begin() + i);
+				i--;
+				bullets.erase(bullets.begin() + j);
+				break;
+			}
+		}
+	}
 }
 
 void Game::render() {
@@ -176,6 +257,10 @@ void Game::render() {
 		for (auto& enemy : enemies) {
 			window.draw(enemy.enemy);
 		}
+		for (auto& attackingEnemy : attackingEnemyManager.attackingEnemies) {
+			window.draw(attackingEnemy.attackingEnemy);
+		}
+
 		
 		window.display();
 }
