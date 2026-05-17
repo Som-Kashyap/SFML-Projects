@@ -17,10 +17,6 @@ A real-time Pong game built in C++ using SFML, implementing a structured game lo
 - (->) paddle moves right
 - ( <- ) paddle moves left
 
----
-
-## Screenshot
-![Game Screenshot](Gameplay.jpg)
 
 ---
 
