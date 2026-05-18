@@ -8,6 +8,7 @@ A real-time Pong game built in C++ using SFML, implementing a structured game lo
 - Real-time game loop (update + render cycle)
 - Paddle movement with keyboard input
 - Ball movement with boundary collision
+- Opponent Paddle
 - Score tracking system
 - Object-oriented structure (Ball, Paddle classes)
 
@@ -24,7 +25,7 @@ A real-time Pong game built in C++ using SFML, implementing a structured game lo
 1. Download the project folder
 2. Ensure all required DLLs are in the same directory as `Pong.exe`
 3. Run `BallBouncer.exe`
-4. 
+ 
 ---
 
 ## What I Learned
@@ -33,6 +34,7 @@ A real-time Pong game built in C++ using SFML, implementing a structured game lo
 - Designing classes and managing object interactions
 - Basic collision detection and response
 - Debugging runtime behavior in C++
+- OOP clarity
 
 ---
 
