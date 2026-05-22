@@ -7,9 +7,9 @@ It is a part of my bigger projects such as 'Physics Playground' and 'Particle Sh
 
 ## Features
 
--Multiple objects  
--Gravity and rebound physics  
--Projectile motion  
+- Multiple objects  
+- Gravity and rebound physics  
+- Projectile motion  
 
 ---
 
@@ -21,8 +21,8 @@ https://github.com/user-attachments/assets/96fded18-e43d-463a-b89d-d7b695669d21
 
 ## Tech Stack
 
--C++  
--SFML  
--Visual Studio  
+- C++  
+- SFML  
+- Visual Studio  
 
 ---
