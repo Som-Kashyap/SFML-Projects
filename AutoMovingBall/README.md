@@ -1,4 +1,4 @@
-## AUTO MOVING-BAll
+## AUTO MOVING-BALL
 
 This is one of my first builds using SFML  
 In this project , I explored moving objects every frame , one of the fundamental concepts in graphics programming
