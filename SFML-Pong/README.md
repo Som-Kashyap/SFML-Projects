@@ -22,6 +22,8 @@ https://github.com/user-attachments/assets/ae1ec5af-091b-48ec-906c-29bd90151c56
 ## Controls
 - (->) paddle moves right
 - ( <- ) paddle moves left
+- (P) pause
+  
 
 
 ---
