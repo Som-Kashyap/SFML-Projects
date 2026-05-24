@@ -8,6 +8,7 @@ I'm currently experimenting different features for the same
 ## Features
 
 - Object spawning
+- Random enemy velocity over a fixed range
 - Erasing objects for memory management
 - OOP structure with multiple classes for better readability
 
@@ -15,7 +16,8 @@ I'm currently experimenting different features for the same
 
 ## What I Learnt?
 
-- Spawning and handling multiple objects  
+- Spawning and handling multiple objects
+- Handling large arrays and arrays of objects
 - Seperating classes for different components  
 - Shooting logic ( spawning and moving bullets )  
 
