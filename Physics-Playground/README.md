@@ -1,5 +1,5 @@
 ## Physics Playground
-This repo consists of my ongoing physics playground project built using C++ and SFML.
+This repo consists of my ongoing physics playground project built using C++ and SFML.  
 This project is currenty in development phase.
 
 ---
