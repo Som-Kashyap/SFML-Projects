@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BallBouncer.cpp">
+    <ClCompile Include="SFML-Pong.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
