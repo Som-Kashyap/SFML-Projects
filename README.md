@@ -16,7 +16,7 @@ Classic paddle-and-ball game featuring collision detection, scoring, and real-ti
 Experimentation with object movement, collision response, and basic physics concepts.
 
 ### Particle Shooter
-Particle spawning and projectile mechanics driven by user input and game events.
+Particle spawning and destruction mechanics driven by user input and game events.
 
 ### Multiple Balls
 Simulation of multiple moving objects with independent movement and collision behavior.
