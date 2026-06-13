@@ -1,8 +1,9 @@
 
 # Pong Game (C++ / SFML)
 
-A real-time Pong game built in C++ using SFML, implementing a structured game loop, object-oriented design, and basic collision mechanics.
+- A real-time Pong game built in C++ using SFML, implementing a structured game loop, object-oriented design, and basic collision mechanics.
 
+- version (1.0)
 ---
 
 ## Features
