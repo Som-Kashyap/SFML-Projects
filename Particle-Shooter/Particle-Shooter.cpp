@@ -2,6 +2,7 @@
 #include<ctime>
 #include<cstdlib>
 #include<iostream>
+#include<format>
 
 enum class GameState
 {
@@ -59,6 +60,7 @@ public:
 	int wave = 0;
 	int bulletsFired = 0;
 	int bulletsHit = 0;
+	float accuracy = 0.f;
 
 	void UI();	
 	void rungame();
@@ -76,6 +78,7 @@ private:
 	sf::Text bonusText;
 	sf::Text bulletsFiredText;
 	sf::Text bulletsHitText;
+	sf::Text accuracyText;
 
 	void update();
 	void handleEvents();
@@ -192,6 +195,12 @@ void Game::UI() {
 	bulletsHitText.setCharacterSize(20);
 	bulletsHitText.setFillColor(sf::Color::White);
 	bulletsHitText.setPosition(10.f, 70.f);
+
+	accuracyText.setFont(font);
+	accuracyText.setString("Accuracy: 0%");
+	accuracyText.setCharacterSize(20);
+	accuracyText.setFillColor(sf::Color::White);
+	accuracyText.setPosition(10.f, 125.f);
 }
 
 void Game::handleEvents() {
@@ -303,6 +312,10 @@ void Game::update() {
 					scoreText.setString("Score: " + std::to_string(score));
 					bulletsHitText.setString("Bullets Hit: " + std::to_string(bulletsHit));
 
+					accuracy = (static_cast<float>(bulletsHit) / static_cast<float>(bulletsFired)) * 100;
+					std::string formattedAccuracy = std::format("{:.2f}", accuracy);
+					accuracyText.setString("Accuracy: " + formattedAccuracy + "%");
+
 					enemies.erase(enemies.begin() + i);
 					i--;
 
@@ -353,6 +366,8 @@ void Game::resetGame() {
 	wave = 0;
 	bulletsFired = 0;
 	bulletsHit = 0;
+	accuracy = 0.f;
+	accuracyText.setString("Accuracy: 0%");
 	bulletsHitText.setString("Bullets Hit: " + std::to_string(bulletsHit));
 	bulletsFiredText.setString("Bullets Fired: " + std::to_string(bulletsFired));
 	scoreText.setString("Score: " + std::to_string(score));
@@ -364,13 +379,17 @@ void Game::resetGame() {
 void Game::render() {
 
 		window.clear();
-	
+
 		if (state == GameState::Start) {
+			for (auto& enemy : enemies) {
+				window.draw(enemy.enemy);
+			}
 			window.draw(cannon);
 			window.draw(scoreText);
 			window.draw(waveText);
 			window.draw(bulletsFiredText);
 			window.draw(bulletsHitText);
+			window.draw(accuracyText);
 			if (bonusDisplayed) {
 				window.draw(bonusText);
 			}
@@ -378,9 +397,7 @@ void Game::render() {
 				window.draw(val.bullet);
 			}
 
-			for (auto& enemy : enemies) {
-				window.draw(enemy.enemy);
-			}
+			
 		}
 		
 		if (state == GameState::Menu) {
