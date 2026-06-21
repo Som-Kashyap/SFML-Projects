@@ -51,14 +51,18 @@ public:
 	float deltaTime = 0.f;
 	bool respawn;
 	sf::Clock timeClock;
+	bool bonusDisplayed = false;
 	int time = 0;
 	const float width = 20.f, height = 80.f;
 
 	int score = 0;
 	int wave = 0;
+	int bulletsFired = 0;
+	int bulletsHit = 0;
 
 	void UI();	
 	void rungame();
+	void resetGame();
 	Game();
 
 private:
@@ -69,6 +73,10 @@ private:
 	sf::Text scoreText;
 	sf::Text waveText;
 	sf::Text gameoverText;
+	sf::Text bonusText;
+	sf::Text bulletsFiredText;
+	sf::Text bulletsHitText;
+
 	void update();
 	void handleEvents();
 	void render();
@@ -133,39 +141,57 @@ void Game::UI() {
 	
 	menuText.setFont(font);
 	menuText.setString("Press Enter to Start");
-	menuText.setCharacterSize(24);
+	menuText.setCharacterSize(20);
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(windowWidth / 2.f - menuText.getGlobalBounds().width / 2.f, windowHeight / 2.f - menuText.getGlobalBounds().height / 2.f);
 	
 	pauseText.setFont(font);
 	pauseText.setString("Game Paused. Press P to Resume");
-	pauseText.setCharacterSize(24);
+	pauseText.setCharacterSize(20);
 	pauseText.setFillColor(sf::Color::White);
 	pauseText.setPosition(windowWidth / 2.f - pauseText.getGlobalBounds().width / 2.f, windowHeight / 2.f - pauseText.getGlobalBounds().height / 2.f);
 
 	exitText.setFont(font);
 	exitText.setString("Press Escape to Exit");
-	exitText.setCharacterSize(24);
+	exitText.setCharacterSize(20);
 	exitText.setFillColor(sf::Color::White);
 	exitText.setPosition(windowWidth / 2.f - exitText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - exitText.getGlobalBounds().height / 2.f) + 2*exitText.getGlobalBounds().height);
 
 	scoreText.setFont(font);
 	scoreText.setString("Score: 0");
-	scoreText.setCharacterSize(24);
+	scoreText.setCharacterSize(20);
 	scoreText.setFillColor(sf::Color::White);
 	scoreText.setPosition(10.f, 10.f);
 
 	waveText.setFont(font);
 	waveText.setString("Wave: 1");
-	waveText.setCharacterSize(24);
+	waveText.setCharacterSize(20);
 	waveText.setFillColor(sf::Color::White);
-	waveText.setPosition(10.f, 80.f);
+	waveText.setPosition(10.f, 100.f);
 
 	gameoverText.setFont(font);
 	gameoverText.setString("Game Over! Hit enter to return to menu");
-	gameoverText.setCharacterSize(24);
+	gameoverText.setCharacterSize(20);
 	gameoverText.setFillColor(sf::Color::Red);
 	gameoverText.setPosition(windowWidth / 2.f - gameoverText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - gameoverText.getGlobalBounds().height / 2.f));
+
+	bonusText.setFont(font);
+	bonusText.setString("Boom +100 points!");
+	bonusText.setCharacterSize(20);
+	bonusText.setFillColor(sf::Color::Yellow);
+	bonusText.setPosition(windowWidth / 2.f - bonusText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - bonusText.getGlobalBounds().height / 2.f));
+
+	bulletsFiredText.setFont(font);
+	bulletsFiredText.setString("Bullets Fired: 0");
+	bulletsFiredText.setCharacterSize(20);
+	bulletsFiredText.setFillColor(sf::Color::White);
+	bulletsFiredText.setPosition(10.f, 40.f);
+
+	bulletsHitText.setFont(font);
+	bulletsHitText.setString("Bullets Hit: 0");
+	bulletsHitText.setCharacterSize(20);
+	bulletsHitText.setFillColor(sf::Color::White);
+	bulletsHitText.setPosition(10.f, 70.f);
 }
 
 void Game::handleEvents() {
@@ -185,6 +211,8 @@ void Game::handleEvents() {
 				cannon.move(cannonVelocity * (deltaTime));
 			}
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
+				bulletsFired++;
+				bulletsFiredText.setString("Bullets Fired: " + std::to_string(bulletsFired));
 				Particles newBullet;
 				newBullet.spawnParticles();
 				newBullet.bullet.setPosition(cannon.getPosition().x + (width / 2.0), cannon.getPosition().y);
@@ -212,7 +240,7 @@ void Game::handleEvents() {
 		if (state == GameState::Start) {
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
 				state = GameState::Menu;
-		
+				resetGame();
 			}
 		}
 		else if (state == GameState::Menu) {
@@ -259,12 +287,8 @@ void Game::update() {
 			{
 
 				state = GameState::GameOver;
-				enemies.clear();
-				bullets.clear();
-				wave = 0;
-				score = 0;
+				resetGame();
 				return;
-
 
 			}
 
@@ -274,7 +298,10 @@ void Game::update() {
 					bullets[j].bullet.getGlobalBounds()))
 				{
 					score += 10;
+					bulletsHit++;
+
 					scoreText.setString("Score: " + std::to_string(score));
+					bulletsHitText.setString("Bullets Hit: " + std::to_string(bulletsHit));
 
 					enemies.erase(enemies.begin() + i);
 					i--;
@@ -307,8 +334,32 @@ void Game::update() {
 		else respawn = false;
 
 	}
+	if (state == GameState::Start && enemies.size() == 0) {
+		respawn = true;
+		bonusDisplayed = true;
+		bonusText.setString("Bonus +100 points!");
+
+		if (timeClock.getElapsedTime().asSeconds() >= 2 && bonusDisplayed) {
+			score += 100;
+			scoreText.setString("Score: " + std::to_string(score));
+			bonusDisplayed = false;
+			timeClock.restart();
+		}
+	}
 }
-	
+
+void Game::resetGame() {
+	score = 0;
+	wave = 0;
+	bulletsFired = 0;
+	bulletsHit = 0;
+	bulletsHitText.setString("Bullets Hit: " + std::to_string(bulletsHit));
+	bulletsFiredText.setString("Bullets Fired: " + std::to_string(bulletsFired));
+	scoreText.setString("Score: " + std::to_string(score));
+	waveText.setString("Wave: " + std::to_string(wave));
+	enemies.clear();
+	bullets.clear();
+}
 
 void Game::render() {
 
@@ -318,6 +369,11 @@ void Game::render() {
 			window.draw(cannon);
 			window.draw(scoreText);
 			window.draw(waveText);
+			window.draw(bulletsFiredText);
+			window.draw(bulletsHitText);
+			if (bonusDisplayed) {
+				window.draw(bonusText);
+			}
 			for (auto& val : bullets) {
 				window.draw(val.bullet);
 			}
