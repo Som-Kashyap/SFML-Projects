@@ -3,6 +3,7 @@
 #include<cstdlib>
 #include<iostream>
 #include<format>
+#include<fstream>
 
 enum class GameState
 {
@@ -32,7 +33,8 @@ public:
 };
 
 class Game {
-
+private:
+	int highestScore = 0;
 public:
 	GameState state;
 
@@ -61,6 +63,7 @@ public:
 	int bulletsFired = 0;
 	int bulletsHit = 0;
 	float accuracy = 0.f;
+	
 
 	void UI();	
 	void rungame();
@@ -79,6 +82,7 @@ private:
 	sf::Text bulletsFiredText;
 	sf::Text bulletsHitText;
 	sf::Text accuracyText;
+	sf::Text highestScoreText;
 
 	void update();
 	void handleEvents();
@@ -104,6 +108,12 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 		enemies.emplace_back(enemy);
 	}
 	time = timeClock.getElapsedTime().asSeconds();
+
+	std::ifstream file("resources/highscore.txt");
+	if (file.is_open()) {
+		file >> highestScore;
+		file.close();
+	}
 }
 
 Enemy::Enemy() {
@@ -201,6 +211,12 @@ void Game::UI() {
 	accuracyText.setCharacterSize(20);
 	accuracyText.setFillColor(sf::Color::White);
 	accuracyText.setPosition(10.f, 125.f);
+
+	highestScoreText.setFont(font);
+	highestScoreText.setString("Highest Score:0");
+	highestScoreText.setCharacterSize(20);
+	highestScoreText.setFillColor(sf::Color::White);
+	highestScoreText.setPosition(10.f, 140.f);
 }
 
 void Game::handleEvents() {
@@ -307,6 +323,12 @@ void Game::update() {
 					bullets[j].bullet.getGlobalBounds()))
 				{
 					score += 10;
+					highestScore = std::max(highestScore, score);
+
+					std::ofstream file("resources/highscore.txt");
+					file << highestScore;
+
+					highestScoreText.setString("Highest Score: " + std::to_string(highestScore));
 					bulletsHit++;
 
 					scoreText.setString("Score: " + std::to_string(score));
@@ -390,6 +412,8 @@ void Game::render() {
 			window.draw(bulletsFiredText);
 			window.draw(bulletsHitText);
 			window.draw(accuracyText);
+			window.draw(highestScoreText);
+
 			if (bonusDisplayed) {
 				window.draw(bonusText);
 			}
