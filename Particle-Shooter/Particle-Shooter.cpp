@@ -21,6 +21,7 @@ public:
 	sf::Vector2f bulletVelocity;
 	void Update(float deltaTime);
 	void spawnParticles();
+	sf::Sprite bulletsprite;
 };
 
 class Enemy {
@@ -30,6 +31,8 @@ public:
 	sf::RectangleShape enemy;
 	//void createEnemy();
 	void update(float deltaTime , bool respawn);
+
+	sf::Sprite enemysprite;
 };
 
 class Game {
@@ -40,6 +43,11 @@ private:
 	int bulletsFired = 0;
 	int bulletsHit = 0;
 	float accuracy = 0.f;
+
+	sf::Texture enemyTexture;
+	sf::Texture cannonTexture;
+	sf::Sprite cannonSprite;
+	sf::Texture bulletTexture;
 public:
 	GameState state;
 
@@ -94,14 +102,14 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 
 	cannon.setSize(sf::Vector2f(20.f, 80.f));
 	cannonVelocity = { 500.f , 0.f };
-	cannon.setFillColor(sf::Color::Green);
+	//cannon.setFillColor(sf::Color::Green);
 	cannon.setPosition(400.f, 520.f);
 
 	state = GameState::Menu;
 
 	UI();
 
-	for(size_t i = 0 ;i < enemyCount; i++) {
+	for (size_t i = 0; i < enemyCount; i++) {
 		Enemy enemy;
 		enemies.emplace_back(enemy);
 	}
@@ -112,7 +120,14 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 		file >> highestScore;
 		file.close();
 	}
-	
+
+	if (!enemyTexture.loadFromFile("resources/enemyRed1.png")) std::cout << "Couldn't load enemyTexture!" << std::endl;
+
+	if (!cannonTexture.loadFromFile("resources/playerShip1_blue.png")) std::cout << "Couldn't load cannonTexture!" << std::endl;
+	if (!bulletTexture.loadFromFile("resources/laserBlue07.png")) std::cout << "Couldn't load bulletTexture!" << std::endl;
+
+	cannonSprite.setTexture(cannonTexture);
+	cannonSprite.setPosition(cannon.getPosition());
 }
 
 Enemy::Enemy() {
@@ -120,11 +135,13 @@ Enemy::Enemy() {
 	//if (respawn) {
 	//	enemyVelocity.y += 900 * deltaTime;
 	//}
-	 enemyVelocity = { 0 , static_cast<float>(rand()%50+10)};
+	enemyVelocity = { 0 , static_cast<float>(rand()%50+10)};
 	const float enemyWidth = 40.f, enemyHeight = 40.f;
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
 	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
 	enemy.setPosition(static_cast<float>(std::rand() %760) , static_cast<float>(std::rand()%-100));
+
+	sf::Sprite enemysprite;
 
 }
 
@@ -133,17 +150,19 @@ void Particles::spawnParticles() {
 	bulletVelocity = { 0,-500.0 };
 	bullet.setFillColor(sf::Color::White);
 	bullet.setRadius(5.0);
-
+	
 }
 
 void Particles::Update(float deltaTime) {
 
 	bullet.move(bulletVelocity * deltaTime);
+	bulletsprite.setPosition(bullet.getPosition());
 }
 
 void Enemy::update(float deltaTime , bool respawn) {
 
 	enemy.move(enemyVelocity * deltaTime);
+	enemysprite.setPosition(enemy.getPosition());
 
 }
 
@@ -228,18 +247,27 @@ void Game::handleEvents() {
 		}
 
 		if (state == GameState::Start) {
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-				cannon.move(cannonVelocity * (-deltaTime));
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && cannonSprite.getPosition().x > 0) {
+				cannonSprite.move(cannonVelocity * (-deltaTime));
 			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-				cannon.move(cannonVelocity * (deltaTime));
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && cannonSprite.getPosition().x+cannonSprite.getGlobalBounds().width / 2.f < windowWidth) {
+				cannonSprite.move(cannonVelocity * (deltaTime));
 			}
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
 				bulletsFired++;
 				bulletsFiredText.setString("Bullets Fired: " + std::to_string(bulletsFired));
 				Particles newBullet;
 				newBullet.spawnParticles();
-				newBullet.bullet.setPosition(cannon.getPosition().x + (width / 2.0), cannon.getPosition().y);
+
+				float x = cannonSprite.getPosition().x +
+					cannonSprite.getGlobalBounds().width / 2.f;
+				float y = cannonSprite.getPosition().y;
+
+				newBullet.bullet.setPosition(x, y);
+				newBullet.bulletsprite.setPosition(x, y);
+
+				newBullet.bulletsprite.setTexture(bulletTexture);
+
 				bullets.emplace_back(newBullet);
 			}
 		}
@@ -318,7 +346,7 @@ void Game::update() {
 
 			for (size_t j = 0; j < bullets.size(); j++) {
 
-				if (enemies[i].enemy.getGlobalBounds().intersects(
+				if (enemies[i].enemysprite.getGlobalBounds().intersects(
 					bullets[j].bullet.getGlobalBounds()))
 				{
 					score += 10;
@@ -361,6 +389,7 @@ void Game::update() {
 
 			for (size_t i = 0; i < enemyCount; i++) {
 				Enemy enemy;
+				enemy.enemysprite.setTexture(enemyTexture);
 				enemies.emplace_back(enemy);
 			}
 
@@ -403,9 +432,9 @@ void Game::render() {
 
 		if (state == GameState::Start) {
 			for (auto& enemy : enemies) {
-				window.draw(enemy.enemy);
+				window.draw(enemy.enemysprite);
 			}
-			window.draw(cannon);
+			window.draw(cannonSprite);
 			window.draw(scoreText);
 			window.draw(waveText);
 			window.draw(bulletsFiredText);
@@ -417,7 +446,7 @@ void Game::render() {
 				window.draw(bonusText);
 			}
 			for (auto& val : bullets) {
-				window.draw(val.bullet);
+				window.draw(val.bulletsprite);
 			}
 
 			
