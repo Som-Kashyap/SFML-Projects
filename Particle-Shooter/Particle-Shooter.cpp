@@ -55,7 +55,7 @@ public:
 	const float width = 20.f, height = 80.f;
 
 	int score = 0;
-	int lives = 3;
+	int wave = 0;
 
 	void UI();	
 	void rungame();
@@ -67,8 +67,7 @@ private:
 	sf::Text pauseText;
 	sf::Text exitText;
 	sf::Text scoreText;
-	sf::Text livesText;
-	sf::Text nextwaveText;
+	sf::Text waveText;
 	sf::Text gameoverText;
 	void update();
 	void handleEvents();
@@ -156,23 +155,17 @@ void Game::UI() {
 	scoreText.setFillColor(sf::Color::White);
 	scoreText.setPosition(10.f, 10.f);
 
-	livesText.setFont(font);
-	livesText.setString("Lives: 3");
-	livesText.setCharacterSize(24);
-	livesText.setFillColor(sf::Color::White);
-	livesText.setPosition(10.f, 40.f);
-
-	nextwaveText.setFont(font);
-	nextwaveText.setString("Press LCtrl to start next wave!");
-	nextwaveText.setCharacterSize(24);
-	nextwaveText.setFillColor(sf::Color::White);
-	nextwaveText.setPosition(10.f, 80.f);
+	waveText.setFont(font);
+	waveText.setString("Wave: 1");
+	waveText.setCharacterSize(24);
+	waveText.setFillColor(sf::Color::White);
+	waveText.setPosition(10.f, 80.f);
 
 	gameoverText.setFont(font);
-	gameoverText.setString("Game Over");
+	gameoverText.setString("Game Over! Hit enter to return to menu");
 	gameoverText.setCharacterSize(24);
 	gameoverText.setFillColor(sf::Color::Red);
-	gameoverText.setPosition(windowWidth / 2.f - exitText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - exitText.getGlobalBounds().height / 2.f));
+	gameoverText.setPosition(windowWidth / 2.f - gameoverText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - gameoverText.getGlobalBounds().height / 2.f));
 }
 
 void Game::handleEvents() {
@@ -232,6 +225,11 @@ void Game::handleEvents() {
 				state = GameState::Menu;
 			}
 		}
+		else if (state == GameState::GameOver) {
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+				state = GameState::Menu;
+			}
+		}
 
 	}
 }
@@ -259,8 +257,15 @@ void Game::update() {
 			if (enemies[i].enemy.getPosition().y +
 				enemies[i].enemy.getSize().y > windowHeight)
 			{
+
 				state = GameState::GameOver;
+				enemies.clear();
+				bullets.clear();
+				wave = 0;
+				score = 0;
 				return;
+
+
 			}
 
 			for (size_t j = 0; j < bullets.size(); j++) {
@@ -288,7 +293,11 @@ void Game::update() {
 		);
 
 		if (enemies.size() == 0) {
+
 			respawn = true;
+			wave++;
+			waveText.setString("Wave: " + std::to_string(wave));
+
 			for (size_t i = 0; i < enemyCount; i++) {
 				Enemy enemy;
 				enemies.emplace_back(enemy);
@@ -308,7 +317,7 @@ void Game::render() {
 		if (state == GameState::Start) {
 			window.draw(cannon);
 			window.draw(scoreText);
-			window.draw(livesText);
+			window.draw(waveText);
 			for (auto& val : bullets) {
 				window.draw(val.bullet);
 			}
