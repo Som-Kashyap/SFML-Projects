@@ -34,7 +34,12 @@ public:
 
 class Game {
 private:
-	int highestScore = 0;
+	int highestScore;
+	int score = 0;
+	int wave = 0;
+	int bulletsFired = 0;
+	int bulletsHit = 0;
+	float accuracy = 0.f;
 public:
 	GameState state;
 
@@ -57,14 +62,7 @@ public:
 	bool bonusDisplayed = false;
 	int time = 0;
 	const float width = 20.f, height = 80.f;
-
-	int score = 0;
-	int wave = 0;
-	int bulletsFired = 0;
-	int bulletsHit = 0;
-	float accuracy = 0.f;
 	
-
 	void UI();	
 	void rungame();
 	void resetGame();
@@ -114,6 +112,7 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 		file >> highestScore;
 		file.close();
 	}
+	
 }
 
 Enemy::Enemy() {
@@ -213,10 +212,10 @@ void Game::UI() {
 	accuracyText.setPosition(10.f, 125.f);
 
 	highestScoreText.setFont(font);
-	highestScoreText.setString("Highest Score:0");
+	//highestScoreText.setString("Highest Score: " + std::to_string(highestScore));
 	highestScoreText.setCharacterSize(20);
 	highestScoreText.setFillColor(sf::Color::White);
-	highestScoreText.setPosition(10.f, 140.f);
+	highestScoreText.setPosition(10.f, 150.f);
 }
 
 void Game::handleEvents() {
