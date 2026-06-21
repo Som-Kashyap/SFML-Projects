@@ -26,7 +26,7 @@ public:
 	Enemy();
 	sf::Vector2f enemyVelocity;
 	sf::RectangleShape enemy;
-	void createEnemy();
+	//void createEnemy();
 	void update(float deltaTime , bool respawn);
 };
 
@@ -55,6 +55,7 @@ public:
 	const float width = 20.f, height = 80.f;
 
 	int score = 0;
+	int lives = 3;
 
 	void UI();	
 	void rungame();
@@ -66,6 +67,9 @@ private:
 	sf::Text pauseText;
 	sf::Text exitText;
 	sf::Text scoreText;
+	sf::Text livesText;
+	sf::Text nextwaveText;
+	sf::Text gameoverText;
 	void update();
 	void handleEvents();
 	void render();
@@ -81,7 +85,7 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	cannon.setFillColor(sf::Color::Green);
 	cannon.setPosition(400.f, 520.f);
 
-	GameState state = GameState::Menu;
+	state = GameState::Menu;
 
 	UI();
 
@@ -126,9 +130,7 @@ void Enemy::update(float deltaTime , bool respawn) {
 
 void Game::UI() {
 
-	if (!font.loadFromFile("resources/arial.ttf")) {
-		std::cout << "Error loading font" << std::endl;
-	}
+	if (!font.loadFromFile("resources/arial.ttf")) std::cout << "Error loading font" << std::endl;
 	
 	menuText.setFont(font);
 	menuText.setString("Press Enter to Start");
@@ -154,6 +156,23 @@ void Game::UI() {
 	scoreText.setFillColor(sf::Color::White);
 	scoreText.setPosition(10.f, 10.f);
 
+	livesText.setFont(font);
+	livesText.setString("Lives: 3");
+	livesText.setCharacterSize(24);
+	livesText.setFillColor(sf::Color::White);
+	livesText.setPosition(10.f, 40.f);
+
+	nextwaveText.setFont(font);
+	nextwaveText.setString("Press LCtrl to start next wave!");
+	nextwaveText.setCharacterSize(24);
+	nextwaveText.setFillColor(sf::Color::White);
+	nextwaveText.setPosition(10.f, 80.f);
+
+	gameoverText.setFont(font);
+	gameoverText.setString("Game Over");
+	gameoverText.setCharacterSize(24);
+	gameoverText.setFillColor(sf::Color::Red);
+	gameoverText.setPosition(windowWidth / 2.f - exitText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - exitText.getGlobalBounds().height / 2.f));
 }
 
 void Game::handleEvents() {
@@ -165,17 +184,19 @@ void Game::handleEvents() {
 			window.close();
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-			cannon.move(cannonVelocity*(-deltaTime));
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-			cannon.move(cannonVelocity * (deltaTime));
-		}
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
-			Particles newBullet;
-			newBullet.spawnParticles();
-			newBullet.bullet.setPosition(cannon.getPosition().x + (width / 2.0), cannon.getPosition().y);
-			bullets.emplace_back(newBullet);
+		if (state == GameState::Start) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+				cannon.move(cannonVelocity * (-deltaTime));
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+				cannon.move(cannonVelocity * (deltaTime));
+			}
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
+				Particles newBullet;
+				newBullet.spawnParticles();
+				newBullet.bullet.setPosition(cannon.getPosition().x + (width / 2.0), cannon.getPosition().y);
+				bullets.emplace_back(newBullet);
+			}
 		}
 
 		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
@@ -234,12 +255,25 @@ void Game::update() {
 		}
 
 		for (size_t i = 0; i < enemies.size(); i++) {
+
+			if (enemies[i].enemy.getPosition().y +
+				enemies[i].enemy.getSize().y > windowHeight)
+			{
+				state = GameState::GameOver;
+				return;
+			}
+
 			for (size_t j = 0; j < bullets.size(); j++) {
-				if (enemies[i].enemy.getGlobalBounds().intersects(bullets[j].bullet.getGlobalBounds())) {
-					score++;
+
+				if (enemies[i].enemy.getGlobalBounds().intersects(
+					bullets[j].bullet.getGlobalBounds()))
+				{
+					score += 10;
 					scoreText.setString("Score: " + std::to_string(score));
+
 					enemies.erase(enemies.begin() + i);
-					i--; // adjust index after erase
+					i--;
+
 					bullets.erase(bullets.begin() + j);
 					break;
 				}
@@ -261,12 +295,11 @@ void Game::update() {
 			}
 
 		}
-		else {
-			respawn = false;
-		}
+		else respawn = false;
+
 	}
+}
 	
-	}
 
 void Game::render() {
 
@@ -275,6 +308,7 @@ void Game::render() {
 		if (state == GameState::Start) {
 			window.draw(cannon);
 			window.draw(scoreText);
+			window.draw(livesText);
 			for (auto& val : bullets) {
 				window.draw(val.bullet);
 			}
@@ -292,7 +326,9 @@ void Game::render() {
 		if (state == GameState::Pause) {
 			window.draw(pauseText);
 		}
-		
+		if (state == GameState::GameOver) {
+			window.draw(gameoverText);
+		}
 		window.display();
 }
 
