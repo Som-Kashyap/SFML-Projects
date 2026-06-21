@@ -54,6 +54,8 @@ public:
 	int time = 0;
 	const float width = 20.f, height = 80.f;
 
+	int score = 0;
+
 	void UI();	
 	void rungame();
 	Game();
@@ -63,6 +65,7 @@ private:
 	sf::Text menuText;
 	sf::Text pauseText;
 	sf::Text exitText;
+	sf::Text scoreText;
 	void update();
 	void handleEvents();
 	void render();
@@ -144,6 +147,13 @@ void Game::UI() {
 	exitText.setCharacterSize(24);
 	exitText.setFillColor(sf::Color::White);
 	exitText.setPosition(windowWidth / 2.f - exitText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - exitText.getGlobalBounds().height / 2.f) + 2*exitText.getGlobalBounds().height);
+
+	scoreText.setFont(font);
+	scoreText.setString("Score: 0");
+	scoreText.setCharacterSize(24);
+	scoreText.setFillColor(sf::Color::White);
+	scoreText.setPosition(10.f, 10.f);
+
 }
 
 void Game::handleEvents() {
@@ -226,6 +236,8 @@ void Game::update() {
 		for (size_t i = 0; i < enemies.size(); i++) {
 			for (size_t j = 0; j < bullets.size(); j++) {
 				if (enemies[i].enemy.getGlobalBounds().intersects(bullets[j].bullet.getGlobalBounds())) {
+					score++;
+					scoreText.setString("Score: " + std::to_string(score));
 					enemies.erase(enemies.begin() + i);
 					i--; // adjust index after erase
 					bullets.erase(bullets.begin() + j);
@@ -262,6 +274,7 @@ void Game::render() {
 	
 		if (state == GameState::Start) {
 			window.draw(cannon);
+			window.draw(scoreText);
 			for (auto& val : bullets) {
 				window.draw(val.bullet);
 			}
