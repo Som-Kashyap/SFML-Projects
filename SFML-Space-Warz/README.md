@@ -24,6 +24,12 @@ Space Warz is a 2D arcade shooter built using C++ and SFML. Players control a ca
 | P           | Pause / Resume         |
 | Esc         | Exit or Return to Menu |
 
+## Demo 
+
+
+https://github.com/user-attachments/assets/e074adc2-aded-4f31-bcb0-b8826d263cc9
+
+
 ## Gameplay
 
 * Destroy enemies before they reach the bottom of the screen.
