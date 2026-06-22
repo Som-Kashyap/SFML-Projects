@@ -7,6 +7,7 @@
 
 enum class GameState
 {
+	About,
 	Menu,
 	Start,
 	Pause,
@@ -48,6 +49,8 @@ private:
 	sf::Texture cannonTexture;
 	sf::Sprite cannonSprite;
 	sf::Texture bulletTexture;
+	sf::Texture backgroundTexture;
+	sf::Sprite backgroundSprite;
 public:
 	GameState state;
 
@@ -89,6 +92,7 @@ private:
 	sf::Text bulletsHitText;
 	sf::Text accuracyText;
 	sf::Text highestScoreText;
+	sf::Text aboutText;
 
 	void update();
 	void handleEvents();
@@ -105,7 +109,7 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	//cannon.setFillColor(sf::Color::Green);
 	cannon.setPosition(400.f, 520.f);
 
-	state = GameState::Menu;
+	state = GameState::About;
 
 	UI();
 
@@ -125,9 +129,11 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 
 	if (!cannonTexture.loadFromFile("resources/playerShip1_blue.png")) std::cout << "Couldn't load cannonTexture!" << std::endl;
 	if (!bulletTexture.loadFromFile("resources/laserBlue07.png")) std::cout << "Couldn't load bulletTexture!" << std::endl;
-
+	if (!backgroundTexture.loadFromFile("resources/purple.png")) std::cout << "Couldn't load backgroundTexture!" << std::endl;
 	cannonSprite.setTexture(cannonTexture);
 	cannonSprite.setPosition(cannon.getPosition());
+	backgroundSprite.setTexture(backgroundTexture);
+	backgroundSprite.setScale(window.getSize().x / backgroundSprite.getGlobalBounds().width, window.getSize().y / backgroundSprite.getGlobalBounds().height);
 }
 
 Enemy::Enemy() {
@@ -135,7 +141,7 @@ Enemy::Enemy() {
 	//if (respawn) {
 	//	enemyVelocity.y += 900 * deltaTime;
 	//}
-	enemyVelocity = { 0 , static_cast<float>(rand()%50+10)};
+	enemyVelocity = { 0 , static_cast<float>(rand()%60+10)};
 	const float enemyWidth = 40.f, enemyHeight = 40.f;
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
 	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
@@ -171,22 +177,18 @@ void Game::UI() {
 	if (!font.loadFromFile("resources/arial.ttf")) std::cout << "Error loading font" << std::endl;
 	
 	menuText.setFont(font);
-	menuText.setString("Press Enter to Start");
+	menuText.setString("  '   SPACE WARZ   ' \n <---[Hit Enter to Start]---> \n <--Press Escape to Exit-->");
 	menuText.setCharacterSize(20);
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(windowWidth / 2.f - menuText.getGlobalBounds().width / 2.f, windowHeight / 2.f - menuText.getGlobalBounds().height / 2.f);
+	menuText.setLineSpacing(1.5f);
+	menuText.setStyle(sf::Text::Bold);
 	
 	pauseText.setFont(font);
 	pauseText.setString("Game Paused. Press P to Resume");
 	pauseText.setCharacterSize(20);
 	pauseText.setFillColor(sf::Color::White);
 	pauseText.setPosition(windowWidth / 2.f - pauseText.getGlobalBounds().width / 2.f, windowHeight / 2.f - pauseText.getGlobalBounds().height / 2.f);
-
-	exitText.setFont(font);
-	exitText.setString("Press Escape to Exit");
-	exitText.setCharacterSize(20);
-	exitText.setFillColor(sf::Color::White);
-	exitText.setPosition(windowWidth / 2.f - exitText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - exitText.getGlobalBounds().height / 2.f) + 2*exitText.getGlobalBounds().height);
 
 	scoreText.setFont(font);
 	scoreText.setString("Score: 0");
@@ -235,6 +237,14 @@ void Game::UI() {
 	highestScoreText.setCharacterSize(20);
 	highestScoreText.setFillColor(sf::Color::White);
 	highestScoreText.setPosition(10.f, 150.f);
+
+	aboutText.setFont(font);
+	aboutText.setString("Som Kashyap presents: \n '  SPACE WARZ  ' \n [Hit Enter to Start] ");
+	aboutText.setCharacterSize(20);
+	aboutText.setFillColor(sf::Color::White);
+	aboutText.setPosition(windowWidth / 2.f - aboutText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - aboutText.getGlobalBounds().height / 2.f));
+	aboutText.setLineSpacing(1.5f);
+	aboutText.setStyle(sf::Text::Bold);
 }
 
 void Game::handleEvents() {
@@ -310,7 +320,11 @@ void Game::handleEvents() {
 				state = GameState::Menu;
 			}
 		}
-
+		else if (state == GameState::About) {
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+				state = GameState::Menu;
+			}
+		}
 	}
 }
 void Game::update() {
@@ -350,10 +364,12 @@ void Game::update() {
 					bullets[j].bullet.getGlobalBounds()))
 				{
 					score += 10;
-					highestScore = std::max(highestScore, score);
-
-					std::ofstream file("resources/highscore.txt");
-					file << highestScore;
+					
+					if (score > highestScore) {
+						highestScore = score;
+						std::ofstream file("resources/highscore.txt");
+						file << highestScore;
+					}
 
 					highestScoreText.setString("Highest Score: " + std::to_string(highestScore));
 					bulletsHit++;
@@ -429,7 +445,23 @@ void Game::resetGame() {
 void Game::render() {
 
 		window.clear();
+		
+		if (state == GameState::Menu) {
+			window.draw(menuText);
+		}
 
+		if (state == GameState::Pause) {
+			window.draw(pauseText);
+		}
+		if (state == GameState::GameOver) {
+			window.draw(gameoverText);
+		}
+		if (state == GameState::About) {
+			window.draw(aboutText);
+		}
+		if (state != GameState::Menu && state != GameState::About) {
+			window.draw(backgroundSprite);
+		}
 		if (state == GameState::Start) {
 			for (auto& enemy : enemies) {
 				window.draw(enemy.enemysprite);
@@ -449,19 +481,7 @@ void Game::render() {
 				window.draw(val.bulletsprite);
 			}
 
-			
-		}
-		
-		if (state == GameState::Menu) {
-			window.draw(menuText);
-			window.draw(exitText);
-		}
 
-		if (state == GameState::Pause) {
-			window.draw(pauseText);
-		}
-		if (state == GameState::GameOver) {
-			window.draw(gameoverText);
 		}
 		window.display();
 }
