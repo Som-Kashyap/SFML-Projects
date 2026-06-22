@@ -106,7 +106,7 @@ private:
 	
 };
 
-Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter") {
+Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Space Warz") {
 
 	window.setFramerateLimit(60);
 
