@@ -1,39 +1,64 @@
-## Particle-Shooter
+# Space Warz v1.0
 
-This is my 2nd ongoing game project after SFML-Pong  
-I'm currently experimenting different features for the same 
-
----
+Space Warz is a 2D arcade shooter built using C++ and SFML. Players control a cannon and must eliminate incoming enemy waves while maintaining accuracy and achieving the highest score possible.
 
 ## Features
 
-- Object spawning
-- Random enemy velocity over a fixed range
-- Erasing objects for memory management
-- OOP structure with multiple classes for better readability
+* Menu, About, Pause, and Game Over states
+* Sprite-based gameplay
+* Enemy wave progression
+* Score and High Score tracking
+* Bullets Fired and Bullets Hit statistics
+* Accuracy percentage tracking
+* Collision detection system
+* Background rendering and UI elements
 
-  ---
+## Controls
 
-## What I Learnt?
+| Key         | Action                 |
+| ----------- | ---------------------- |
+| Left Arrow  | Move Left              |
+| Right Arrow | Move Right             |
+| Left Ctrl   | Fire Bullet            |
+| Enter       | Start Game             |
+| P           | Pause / Resume         |
+| Esc         | Exit or Return to Menu |
 
-- Spawning and handling multiple objects
-- Handling large arrays and arrays of objects
-- Seperating classes for different components  
-- Shooting logic ( spawning and moving bullets )  
+## Gameplay
 
----
+* Destroy enemies before they reach the bottom of the screen.
+* Each successful hit increases your score.
+* Accuracy is calculated using bullets fired and bullets hit.
+* Survive as long as possible and aim for a new high score.
 
-## Future Updates
+## Technologies Used
 
-- Better UI
-- Attacking enemies
-- and much more
+* C++
+* SFML (Simple and Fast Multimedia Library)
 
----
+## What I Learned
 
-## Tech Stack
+While building this project, I gained practical experience with:
 
-- C++
-- SFML 2.5.1
-- Visual Studio
-  
+* Game loops and frame-independent movement
+* Object-oriented programming
+* State management using enums
+* Managing dynamic entities using vectors
+* Collision detection and object cleanup
+* Texture loading and sprite rendering
+* Event handling and user input
+* Debugging larger interconnected systems
+
+## Future Improvements
+
+* Difficulty scaling based on wave number
+* Enemy attack mechanics
+* Sound effects and background music
+* Improved animations and visual effects
+* Additional enemy types
+
+## Author
+
+Som Kashyap
+
+Space Warz: A game of precision, survival, and endless enemy waves.
