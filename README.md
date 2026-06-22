@@ -9,16 +9,16 @@ Collection of game-development projects and graphics programming experiments bui
 
 ## Projects
 
+### Space Warz 
+A 2D arcade shooter game featuring enemy object spawning, destruction, scoring and statistics, game-states.
+
 ### SFML Pong
 Classic paddle-and-ball game featuring collision detection, scoring, and real-time keyboard input.
 
 ### Physics Playground
 Experimentation with object movement, collision response, and basic physics concepts.
 
-### Particle Shooter
-Particle spawning and destruction mechanics driven by user input and game events.
-
-### Multiple Balls
+### Multiple Moving Balls
 Simulation of multiple moving objects with independent movement and collision behavior.
 
 ### Auto Moving Ball
@@ -27,7 +27,7 @@ Exploration of movement, velocity, and boundary interactions.
 ## Project Showcase
 
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/SFML-Pong](./SFML-Pong) - Paddle game with collision detection and scoring.
-- [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Particle-Shooter](./Particle-Shooter) - Particle spawning and shooting mechanics.
+- [https://github.com/Som-Kashyap/SFML-Projects/tree/main/SFML-Space-Warz](./Particle-Shooter) - Particle spawning and shooting mechanics.
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Physics-Playground](./Physics-Playground) - Physics and collision experiments.
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Multiple-Moving-Balls](./Multiple-Moving-Balls) - Multi-object movement simulation.
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Auto-Moving-Ball](./Auto-Moving-Ball) - Basic movement and boundary interaction.
