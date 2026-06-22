@@ -10,6 +10,7 @@ enum class GameState
 	About,
 	Menu,
 	Start,
+	//BeginGame,
 	Pause,
 	GameOver,
 	Exit
@@ -51,6 +52,8 @@ private:
 	sf::Texture bulletTexture;
 	sf::Texture backgroundTexture;
 	sf::Sprite backgroundSprite;
+	sf::Texture menuTexture;
+	sf::Sprite menuSprite;
 public:
 	GameState state;
 
@@ -93,6 +96,7 @@ private:
 	sf::Text accuracyText;
 	sf::Text highestScoreText;
 	sf::Text aboutText;
+	sf::Text beginGameText;
 
 	void update();
 	void handleEvents();
@@ -130,10 +134,16 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	if (!cannonTexture.loadFromFile("resources/playerShip1_blue.png")) std::cout << "Couldn't load cannonTexture!" << std::endl;
 	if (!bulletTexture.loadFromFile("resources/laserBlue07.png")) std::cout << "Couldn't load bulletTexture!" << std::endl;
 	if (!backgroundTexture.loadFromFile("resources/purple.png")) std::cout << "Couldn't load backgroundTexture!" << std::endl;
+	if (!menuTexture.loadFromFile("resources/blue.png")) std::cout << "Couldn't load menuTexture!" << std::endl;
+
 	cannonSprite.setTexture(cannonTexture);
 	cannonSprite.setPosition(cannon.getPosition());
+
 	backgroundSprite.setTexture(backgroundTexture);
 	backgroundSprite.setScale(window.getSize().x / backgroundSprite.getGlobalBounds().width, window.getSize().y / backgroundSprite.getGlobalBounds().height);
+
+	menuSprite.setTexture(menuTexture);
+	menuSprite.setScale(window.getSize().x/2.f - menuSprite.getGlobalBounds().width/2.f, window.getSize().y/2.f - menuSprite.getGlobalBounds().height/2.f);
 }
 
 Enemy::Enemy() {
@@ -183,60 +193,75 @@ void Game::UI() {
 	menuText.setPosition(windowWidth / 2.f - menuText.getGlobalBounds().width / 2.f, windowHeight / 2.f - menuText.getGlobalBounds().height / 2.f);
 	menuText.setLineSpacing(1.5f);
 	menuText.setStyle(sf::Text::Bold);
+	menuText.setOutlineThickness(0.5f);
+	menuText.setOutlineColor(sf::Color::White);
 	
 	pauseText.setFont(font);
 	pauseText.setString("Game Paused. Press P to Resume");
 	pauseText.setCharacterSize(20);
-	pauseText.setFillColor(sf::Color::White);
+	pauseText.setFillColor(sf::Color(255 , 215 ,0));
 	pauseText.setPosition(windowWidth / 2.f - pauseText.getGlobalBounds().width / 2.f, windowHeight / 2.f - pauseText.getGlobalBounds().height / 2.f);
+	pauseText.setStyle(sf::Text::Bold);
+	pauseText.setOutlineThickness(2.0f);
 
 	scoreText.setFont(font);
 	scoreText.setString("Score: 0");
 	scoreText.setCharacterSize(20);
-	scoreText.setFillColor(sf::Color::White);
+	scoreText.setFillColor(sf::Color::Yellow);
 	scoreText.setPosition(10.f, 10.f);
+	scoreText.setStyle(sf::Text::Bold);
+	scoreText.setOutlineThickness(2.0f);
 
 	waveText.setFont(font);
 	waveText.setString("Wave: 1");
 	waveText.setCharacterSize(20);
-	waveText.setFillColor(sf::Color::White);
+	waveText.setFillColor(sf::Color::Yellow);
 	waveText.setPosition(10.f, 100.f);
+	waveText.setStyle(sf::Text::Bold);
+	waveText.setOutlineThickness(2.0f);
 
 	gameoverText.setFont(font);
 	gameoverText.setString("Game Over! Hit enter to return to menu");
-	gameoverText.setCharacterSize(20);
+	gameoverText.setCharacterSize(25);
 	gameoverText.setFillColor(sf::Color::Red);
 	gameoverText.setPosition(windowWidth / 2.f - gameoverText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - gameoverText.getGlobalBounds().height / 2.f));
+	gameoverText.setStyle(sf::Text::Bold);
+	gameoverText.setOutlineThickness(0.5f);
+	gameoverText.setOutlineColor(sf::Color::Red);
 
-	bonusText.setFont(font);
-	bonusText.setString("Boom +100 points!");
-	bonusText.setCharacterSize(20);
-	bonusText.setFillColor(sf::Color::Yellow);
-	bonusText.setPosition(windowWidth / 2.f - bonusText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - bonusText.getGlobalBounds().height / 2.f));
+	//bonusText.setFont(font);
+	//bonusText.setString("Boom +100 points!");
+	//bonusText.setCharacterSize(20);
+	//bonusText.setFillColor(sf::Color::Yellow);
+	//bonusText.setPosition(windowWidth / 2.f - bonusText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - bonusText.getGlobalBounds().height / 2.f));
 
 	bulletsFiredText.setFont(font);
 	bulletsFiredText.setString("Bullets Fired: 0");
 	bulletsFiredText.setCharacterSize(20);
-	bulletsFiredText.setFillColor(sf::Color::White);
+	bulletsFiredText.setFillColor(sf::Color::Yellow);
 	bulletsFiredText.setPosition(10.f, 40.f);
+	bulletsFiredText.setOutlineThickness(2.0f);
 
 	bulletsHitText.setFont(font);
 	bulletsHitText.setString("Bullets Hit: 0");
 	bulletsHitText.setCharacterSize(20);
-	bulletsHitText.setFillColor(sf::Color::White);
+	bulletsHitText.setFillColor(sf::Color::Yellow);
 	bulletsHitText.setPosition(10.f, 70.f);
+	bulletsHitText.setOutlineThickness(2.0f);
 
 	accuracyText.setFont(font);
 	accuracyText.setString("Accuracy: 0%");
 	accuracyText.setCharacterSize(20);
-	accuracyText.setFillColor(sf::Color::White);
+	accuracyText.setFillColor(sf::Color::Yellow);
 	accuracyText.setPosition(10.f, 125.f);
+	accuracyText.setOutlineThickness(2.0f);
 
 	highestScoreText.setFont(font);
 	//highestScoreText.setString("Highest Score: " + std::to_string(highestScore));
 	highestScoreText.setCharacterSize(20);
-	highestScoreText.setFillColor(sf::Color::White);
+	highestScoreText.setFillColor(sf::Color::Yellow);
 	highestScoreText.setPosition(10.f, 150.f);
+	highestScoreText.setOutlineThickness(2.0f);
 
 	aboutText.setFont(font);
 	aboutText.setString("Som Kashyap presents: \n '  SPACE WARZ  ' \n [Hit Enter to Start] ");
@@ -245,6 +270,16 @@ void Game::UI() {
 	aboutText.setPosition(windowWidth / 2.f - aboutText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - aboutText.getGlobalBounds().height / 2.f));
 	aboutText.setLineSpacing(1.5f);
 	aboutText.setStyle(sf::Text::Bold);
+	aboutText.setLetterSpacing(1.5f);
+	aboutText.setOutlineThickness(2.0f);
+
+	//beginGameText.setFont(font);
+	//beginGameText.setString("Hit Enter to Begin!");
+	//beginGameText.setCharacterSize(20);
+	//beginGameText.setFillColor(sf::Color::Yellow);
+	//beginGameText.setPosition(windowWidth / 2.f - beginGameText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - beginGameText.getGlobalBounds().height / 2.f));
+	//beginGameText.setStyle(sf::Text::Bold);
+	//beginGameText.setOutlineThickness(2.0f);
 }
 
 void Game::handleEvents() {
@@ -445,16 +480,9 @@ void Game::resetGame() {
 void Game::render() {
 
 		window.clear();
-		
 		if (state == GameState::Menu) {
+			window.draw(menuSprite);
 			window.draw(menuText);
-		}
-
-		if (state == GameState::Pause) {
-			window.draw(pauseText);
-		}
-		if (state == GameState::GameOver) {
-			window.draw(gameoverText);
 		}
 		if (state == GameState::About) {
 			window.draw(aboutText);
@@ -462,6 +490,13 @@ void Game::render() {
 		if (state != GameState::Menu && state != GameState::About) {
 			window.draw(backgroundSprite);
 		}
+		if (state == GameState::Pause) {
+			window.draw(pauseText);
+		}
+		if (state == GameState::GameOver) {
+			window.draw(gameoverText);
+		}
+		
 		if (state == GameState::Start) {
 			for (auto& enemy : enemies) {
 				window.draw(enemy.enemysprite);
