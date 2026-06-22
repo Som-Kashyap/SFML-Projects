@@ -54,6 +54,7 @@ private:
 	sf::Sprite backgroundSprite;
 	sf::Texture menuTexture;
 	sf::Sprite menuSprite;
+
 public:
 	GameState state;
 
@@ -97,6 +98,7 @@ private:
 	sf::Text highestScoreText;
 	sf::Text aboutText;
 	sf::Text beginGameText;
+	sf::Text quoteText;
 
 	void update();
 	void handleEvents();
@@ -136,6 +138,7 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 	if (!backgroundTexture.loadFromFile("resources/purple.png")) std::cout << "Couldn't load backgroundTexture!" << std::endl;
 	if (!menuTexture.loadFromFile("resources/blue.png")) std::cout << "Couldn't load menuTexture!" << std::endl;
 
+
 	cannonSprite.setTexture(cannonTexture);
 	cannonSprite.setPosition(cannon.getPosition());
 
@@ -144,6 +147,7 @@ Game::Game() :window(sf::VideoMode(windowWidth, windowHeight), "Particle Shooter
 
 	menuSprite.setTexture(menuTexture);
 	menuSprite.setScale(window.getSize().x/2.f - menuSprite.getGlobalBounds().width/2.f, window.getSize().y/2.f - menuSprite.getGlobalBounds().height/2.f);
+
 }
 
 Enemy::Enemy() {
@@ -187,7 +191,7 @@ void Game::UI() {
 	if (!font.loadFromFile("resources/arial.ttf")) std::cout << "Error loading font" << std::endl;
 	
 	menuText.setFont(font);
-	menuText.setString("  '   SPACE WARZ   ' \n <---[Hit Enter to Start]---> \n <--Press Escape to Exit-->");
+	menuText.setString("  '   SPACE WARZ   ' \n [Hit Enter to Begin Hunting] \n Press Escape to Exit");
 	menuText.setCharacterSize(20);
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(windowWidth / 2.f - menuText.getGlobalBounds().width / 2.f, windowHeight / 2.f - menuText.getGlobalBounds().height / 2.f);
@@ -264,7 +268,7 @@ void Game::UI() {
 	highestScoreText.setOutlineThickness(2.0f);
 
 	aboutText.setFont(font);
-	aboutText.setString("Som Kashyap presents: \n '  SPACE WARZ  ' \n [Hit Enter to Start] ");
+	aboutText.setString("Som Kashyap presents: \n ' SPACE WARZ ' \n [Hit Enter to Start] ");
 	aboutText.setCharacterSize(20);
 	aboutText.setFillColor(sf::Color::White);
 	aboutText.setPosition(windowWidth / 2.f - aboutText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - aboutText.getGlobalBounds().height / 2.f));
@@ -272,6 +276,15 @@ void Game::UI() {
 	aboutText.setStyle(sf::Text::Bold);
 	aboutText.setLetterSpacing(1.5f);
 	aboutText.setOutlineThickness(2.0f);
+
+	quoteText.setFont(font);
+	quoteText.setString(" Accuracy wins battles. Panic firing loses them. ");
+	quoteText.setCharacterSize(20);
+	quoteText.setFillColor(sf::Color::White);
+	quoteText.setPosition(windowWidth / 2.f - quoteText.getGlobalBounds().width / 2.f, (windowHeight / 2.f - quoteText.getGlobalBounds().height / 2.f)+200.f);
+	quoteText.setLineSpacing(1.5f);
+	quoteText.setStyle(sf::Text::Italic);
+	quoteText.setOutlineThickness(2.0f);
 
 	//beginGameText.setFont(font);
 	//beginGameText.setString("Hit Enter to Begin!");
@@ -483,6 +496,7 @@ void Game::render() {
 		if (state == GameState::Menu) {
 			window.draw(menuSprite);
 			window.draw(menuText);
+			window.draw(quoteText);
 		}
 		if (state == GameState::About) {
 			window.draw(aboutText);
