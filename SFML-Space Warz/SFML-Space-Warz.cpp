@@ -155,12 +155,11 @@ Enemy::Enemy() {
 	//if (respawn) {
 	//	enemyVelocity.y += 900 * deltaTime;
 	//}
-	enemyVelocity = { 0 , static_cast<float>(rand()%60+10)};
+	enemyVelocity = { 0 , static_cast<float>(rand()%80+30)};
 	const float enemyWidth = 40.f, enemyHeight = 40.f;
 	enemy.setSize(sf::Vector2f(enemyWidth, enemyHeight));
 	enemy.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
-	enemy.setPosition(static_cast<float>(std::rand() %760) , static_cast<float>(std::rand()%-100));
-
+	
 	sf::Sprite enemysprite;
 
 }
@@ -191,7 +190,7 @@ void Game::UI() {
 	if (!font.loadFromFile("resources/arial.ttf")) std::cout << "Error loading font" << std::endl;
 	
 	menuText.setFont(font);
-	menuText.setString("  '   SPACE WARZ   ' \n [Hit Enter to Begin Hunting] \n Press Escape to Exit");
+	menuText.setString("  '   SPACE WARZ   ' \n Hit Enter to Begin Hunting \n Press Esc to Exit ");
 	menuText.setCharacterSize(20);
 	menuText.setFillColor(sf::Color::White);
 	menuText.setPosition(windowWidth / 2.f - menuText.getGlobalBounds().width / 2.f, windowHeight / 2.f - menuText.getGlobalBounds().height / 2.f);
@@ -451,10 +450,11 @@ void Game::update() {
 			wave++;
 			waveText.setString("Wave: " + std::to_string(wave));
 
-			for (size_t i = 0; i < enemyCount; i++) {
-				Enemy enemy;
-				enemy.enemysprite.setTexture(enemyTexture);
-				enemies.emplace_back(enemy);
+			for (int i = 0; i < enemyCount; i++) {
+				Enemy Enemy;
+				Enemy.enemysprite.setTexture(enemyTexture);
+				Enemy.enemy.setPosition(static_cast<float>(std::rand() % 760), -(i*50));
+				enemies.emplace_back(Enemy);
 			}
 
 		}

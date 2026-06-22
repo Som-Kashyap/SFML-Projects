@@ -24,6 +24,7 @@
     <ProjectGuid>{16bc0a2d-a5d6-48f6-a06b-6819cd6c8b90}</ProjectGuid>
     <RootNamespace>PhysicsPlayground</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Physics Playground</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

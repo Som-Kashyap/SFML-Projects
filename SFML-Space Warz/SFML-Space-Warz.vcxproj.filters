@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Particle-Shooter.cpp">
+    <ClCompile Include="SFML-Space-Warz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
