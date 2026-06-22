@@ -27,7 +27,7 @@ Exploration of movement, velocity, and boundary interactions.
 ## Project Showcase
 
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/SFML-Pong](./SFML-Pong) - Paddle game with collision detection and scoring.
-- [https://github.com/Som-Kashyap/SFML-Projects/tree/main/SFML-Space-Warz](./Particle-Shooter) - Particle spawning and shooting mechanics.
+- [[https://github.com/Som-Kashyap/SFML-Projects/tree/main/SFML-Space-Warz](./SFML-Space-Warz) - Particle spawning and shooting mechanics.
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Physics-Playground](./Physics-Playground) - Physics and collision experiments.
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Multiple-Moving-Balls](./Multiple-Moving-Balls) - Multi-object movement simulation.
 - [https://github.com/Som-Kashyap/SFML-Projects/tree/main/Auto-Moving-Ball](./Auto-Moving-Ball) - Basic movement and boundary interaction.
