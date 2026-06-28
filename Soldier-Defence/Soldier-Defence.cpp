@@ -67,7 +67,7 @@ public:
 	sf::Vector2f attackingEnemyVelocity;
 
 	float shootTimer = 0.f;
-	float shootCooldown = 1.5f;
+	float shootCooldown = 5.0f;
 
 	AttackingEnemies();
 
@@ -136,23 +136,6 @@ Enemies::Enemies() {
 void Enemies::update(float deltaTime, std::vector<EnemyBullets> &enemyBullets ,sf::Vector2f playerPosition){
 
 	enemyShape.move(enemyVelocity * deltaTime);
-
-	shootTimer += deltaTime;
-
-	if (shootTimer >= shootCooldown) {
-
-		sf::Vector2f direction = playerPosition - enemyShape.getPosition();
-
-		float length = sqrt(direction.x * direction.x + direction.y * direction.y);
-
-		direction /= length;
-
-		enemyBullets.emplace_back(enemyShape.getPosition(), direction);
-
-		std::cout << "enemy bullet created" << std::endl;
-
-		shootTimer = 0;
-	}
 	
 }
 
