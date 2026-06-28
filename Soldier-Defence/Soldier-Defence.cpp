@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
 
 class Bullets {
 
@@ -25,13 +27,38 @@ void Bullets::update( float deltaTime) {
 	bulletShape.move(bulletVelocity * deltaTime);
 }
 
+class Enemies {
+
+public:
+
+	Enemies();
+	sf::RectangleShape enemyShape;
+	sf::Vector2f enemyVelocity;
+	void update(float deltaTime);
+
+};
+
+Enemies::Enemies() {
+	enemyShape.setSize(sf::Vector2f(50 , 50));
+	enemyShape.setFillColor(sf::Color::Red);
+	enemyShape.setPosition( static_cast<float>(std::rand()%950 + 850), 600 - enemyShape.getSize().y);
+	enemyVelocity.x = -(std::rand() % 100 + 50);
+	enemyVelocity = sf::Vector2f(enemyVelocity.x, 0);
+}
+
+void Enemies::update(float deltaTime) {
+	enemyShape.move(enemyVelocity * deltaTime);
+}
+
 class Game {
 
 private:
 
 	sf::RenderWindow window;
 	std::vector<Bullets> bullets;
-
+	std::vector<Enemies> enemies;
+	int enemyCount = 10;
+	bool spawnEnemy = false;
 	//sf::Event event;
 
 public:
@@ -96,6 +123,10 @@ void Game::update()
 		bullet.update(deltaTime);
 	}
 
+	for (auto& enemy : enemies) {
+		enemy.update(deltaTime);
+	}
+
 	for (auto it = bullets.begin(); it != bullets.end();) {
 		if (it->bulletShape.getPosition().x > window.getSize().x) {
 			it = bullets.erase(it);
@@ -104,6 +135,33 @@ void Game::update()
 			++it;
 		}
 	}
+
+	for (int i = 0; i < bullets.size(); i++) {
+		for (int j = 0; j < enemies.size(); j++) {
+			if (bullets[i].bulletShape.getGlobalBounds().intersects(enemies[j].enemyShape.getGlobalBounds()) && enemies[j].enemyShape.getPosition().x <= window.getSize().x)	 {
+				std::cout << "Bullet hit enemy" << std::endl;
+				bullets.erase(bullets.begin() + i);
+				enemies.erase(enemies.begin() + j);
+				break;
+			}
+		}
+	}
+
+	if (enemies.size() == 0) {
+
+		spawnEnemy = true;
+
+		for ( int i = 0; i < enemyCount; i++) {
+			Enemies enemy;
+			std::cout << "Enemy created" << std::endl;
+			enemies.emplace_back(enemy);
+			std::cout << "Number of enemies: " << enemies.size() << std::endl;
+		}
+
+		spawnEnemy = false;
+	}
+
+	else 
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && player.getPosition().x < 800 - player.getSize().x) {
 		player.move(playerVelocity.x * deltaTime , 0);
@@ -137,10 +195,12 @@ void Game::render()
 		window.draw(player);
 		
 		for (auto& bullet : bullets) {
-			//bullet.update();
 			window.draw(bullet.bulletShape);
 		}
 
+		for (auto& enemy : enemies) {
+			window.draw(enemy.enemyShape);
+		}
 		window.display();
 	
 }
