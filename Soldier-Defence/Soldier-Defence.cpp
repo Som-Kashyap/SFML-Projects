@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstdlib>
 
+// <--------------------------player-bullets----------------->
 class Bullets {
 
 public:
@@ -27,6 +28,89 @@ void Bullets::update( float deltaTime) {
 	bulletShape.move(bulletVelocity * deltaTime);
 }
 
+//<---------------------------enemy-bullets------------->
+
+class EnemyBullets {
+
+public:
+	float enemyBulletRadius = 5.0f;
+	sf::CircleShape enemyBulletShape;
+	sf::Vector2f enemyBulletVelocity;
+
+	EnemyBullets(sf::Vector2f position, sf::Vector2f direction);
+	void update(float deltaTime);
+
+};
+
+EnemyBullets::EnemyBullets(sf::Vector2f position, sf::Vector2f direction)
+{
+	enemyBulletShape.setFillColor(sf::Color::Red);
+	enemyBulletShape.setRadius(enemyBulletRadius);
+	enemyBulletShape.setPosition(position);
+
+	enemyBulletVelocity = direction * 100.f;
+}
+
+
+void EnemyBullets::update( float deltaTime){
+
+	enemyBulletShape.move(enemyBulletVelocity * deltaTime);
+
+}
+
+//<-------------------------attacking enemies----------->
+class AttackingEnemies {
+
+public:
+
+	sf::RectangleShape attackingEnemyShape;
+	sf::Vector2f attackingEnemyVelocity;
+
+	float shootTimer = 0.f;
+	float shootCooldown = 1.5f;
+
+	AttackingEnemies();
+
+	void update(float deltaTime, sf::Vector2f playerPosition,
+		std::vector<EnemyBullets>& enemyBullets);
+};
+
+AttackingEnemies::AttackingEnemies(){
+
+	attackingEnemyShape.setPosition(600,500);
+	attackingEnemyShape.setSize(sf::Vector2f(50 , 50));
+	attackingEnemyVelocity.x = -(std::rand() % 80 + 50);
+	attackingEnemyShape.setFillColor(sf::Color::Blue);
+
+}
+
+void AttackingEnemies::update(float deltaTime,sf::Vector2f playerPosition,std::vector<EnemyBullets>& enemyBullets)
+{
+	attackingEnemyShape.move(attackingEnemyVelocity * deltaTime);
+
+	shootTimer += deltaTime;
+
+	if (shootTimer >= shootCooldown)
+	{
+		sf::Vector2f direction =
+			playerPosition - attackingEnemyShape.getPosition();
+
+		float length = sqrt(
+			direction.x * direction.x +
+			direction.y * direction.y
+		);
+
+		direction /= length;
+
+		enemyBullets.emplace_back(
+			attackingEnemyShape.getPosition(),
+			direction
+		);
+
+		shootTimer = 0.f;
+	}
+}
+
 class Enemies {
 
 public:
@@ -34,7 +118,10 @@ public:
 	Enemies();
 	sf::RectangleShape enemyShape;
 	sf::Vector2f enemyVelocity;
-	void update(float deltaTime);
+	void update(float deltaTime, std::vector<EnemyBullets> &enemyBullets, sf::Vector2f playerPosition);
+
+	float shootTimer = 0.f;
+	float shootCooldown = 1.5f;
 
 };
 
@@ -46,10 +133,30 @@ Enemies::Enemies() {
 	enemyVelocity = sf::Vector2f(enemyVelocity.x, 0);
 }
 
-void Enemies::update(float deltaTime) {
+void Enemies::update(float deltaTime, std::vector<EnemyBullets> &enemyBullets ,sf::Vector2f playerPosition){
+
 	enemyShape.move(enemyVelocity * deltaTime);
+
+	shootTimer += deltaTime;
+
+	if (shootTimer >= shootCooldown) {
+
+		sf::Vector2f direction = playerPosition - enemyShape.getPosition();
+
+		float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+
+		direction /= length;
+
+		enemyBullets.emplace_back(enemyShape.getPosition(), direction);
+
+		std::cout << "enemy bullet created" << std::endl;
+
+		shootTimer = 0;
+	}
+	
 }
 
+//<---------------------------Game---------------------->
 class Game {
 
 private:
@@ -57,9 +164,13 @@ private:
 	sf::RenderWindow window;
 	std::vector<Bullets> bullets;
 	std::vector<Enemies> enemies;
+	std::vector<AttackingEnemies> attackingEnemies;
+	std::vector<EnemyBullets> enemyBullets;
+
 	int enemyCount = 10;
+	int attackingEnemyCount = 5;
 	bool spawnEnemy = false;
-	//sf::Event event;
+	bool spawnAttackingEnemy = false;
 
 public:
 
@@ -69,6 +180,7 @@ public:
 	sf::Clock deltaTimeClock;
 	float deltaTime = 0.f;
 	sf::RectangleShape player;
+	sf::RectangleShape defendObject;
 	sf::Vector2f playerVelocity = sf::Vector2f(500, 0);
 	sf::Vector2f jumpVelocity;
 
@@ -83,6 +195,11 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 {
 	window.setFramerateLimit(60);
 	deltaTime = 0.f;
+
+	defendObject.setSize(sf::Vector2f(100, 150));
+	defendObject.setFillColor(sf::Color::Blue);
+	defendObject.setPosition(0, 600 - defendObject.getSize().y);
+
 	player.setSize(sf::Vector2f(50, 50));
 	player.setFillColor(sf::Color::Green);
 	player.setPosition( static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y);
@@ -124,7 +241,16 @@ void Game::update()
 	}
 
 	for (auto& enemy : enemies) {
-		enemy.update(deltaTime);
+		enemy.update(deltaTime, enemyBullets, player.getPosition());
+	}
+
+	for (auto& attackingenemy : attackingEnemies)
+	{
+		attackingenemy.update(deltaTime, player.getPosition(), enemyBullets);
+	}
+
+	for (auto& bullets : enemyBullets) {
+		bullets.update(deltaTime);
 	}
 
 	for (auto it = bullets.begin(); it != bullets.end();) {
@@ -161,7 +287,22 @@ void Game::update()
 		spawnEnemy = false;
 	}
 
-	else 
+	if (attackingEnemies.size() == 0) {
+
+		spawnAttackingEnemy = true;
+
+		for (int i = 0; i < attackingEnemyCount; i++) {
+
+			AttackingEnemies attackingEnemyObj;
+			std::cout << "Attacking enemy created" << std::endl;
+			attackingEnemies.emplace_back(attackingEnemyObj);
+			std::cout << "Number of attacking enemies: " << attackingEnemies.size() << std::endl;
+
+		}
+
+		spawnAttackingEnemy = false;
+
+	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && player.getPosition().x < 800 - player.getSize().x) {
 		player.move(playerVelocity.x * deltaTime , 0);
@@ -193,6 +334,7 @@ void Game::render()
 	
 		window.clear(sf::Color::Black);
 		window.draw(player);
+		window.draw(defendObject);
 		
 		for (auto& bullet : bullets) {
 			window.draw(bullet.bulletShape);
@@ -200,6 +342,14 @@ void Game::render()
 
 		for (auto& enemy : enemies) {
 			window.draw(enemy.enemyShape);
+		}
+
+		for (auto& enemy : attackingEnemies) {
+			window.draw(enemy.attackingEnemyShape);
+		}
+
+		for (auto& bullets : enemyBullets){
+			window.draw(bullets.enemyBulletShape);
 		}
 		window.display();
 	
