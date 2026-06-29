@@ -48,7 +48,7 @@ EnemyBullets::EnemyBullets(sf::Vector2f position, sf::Vector2f direction)
 	enemyBulletShape.setRadius(enemyBulletRadius);
 	enemyBulletShape.setPosition(position);
 
-	enemyBulletVelocity = direction * 100.f;
+	enemyBulletVelocity = direction * 200.f;
 }
 
 
@@ -67,24 +67,24 @@ public:
 	sf::Vector2f attackingEnemyVelocity;
 
 	float shootTimer = 0.f;
-	float shootCooldown = 5.0f;
+	float shootCooldown = 3.0f;
 
 	AttackingEnemies();
 
-	void update(float deltaTime, sf::Vector2f playerPosition,
+	void update(float deltaTime, sf::Vector2f objectPosition,
 		std::vector<EnemyBullets>& enemyBullets);
 };
 
 AttackingEnemies::AttackingEnemies(){
 
-	attackingEnemyShape.setPosition(600,500);
+	attackingEnemyShape.setPosition(static_cast<float>(std::rand() % 900) + 850.0, 500.0);
 	attackingEnemyShape.setSize(sf::Vector2f(50 , 50));
 	attackingEnemyVelocity.x = -(std::rand() % 80 + 50);
 	attackingEnemyShape.setFillColor(sf::Color::Blue);
 
 }
 
-void AttackingEnemies::update(float deltaTime,sf::Vector2f playerPosition,std::vector<EnemyBullets>& enemyBullets)
+void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::vector<EnemyBullets>& enemyBullets)
 {
 	attackingEnemyShape.move(attackingEnemyVelocity * deltaTime);
 
@@ -92,25 +92,29 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f playerPosition,std::v
 
 	if (shootTimer >= shootCooldown)
 	{
-		sf::Vector2f direction =
-			playerPosition - attackingEnemyShape.getPosition();
+		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x < 800) {
+			sf::Vector2f direction =
+				objectPosition - attackingEnemyShape.getPosition();
 
-		float length = sqrt(
-			direction.x * direction.x +
-			direction.y * direction.y
-		);
+			float length = sqrt(
+				direction.x * direction.x +
+				direction.y * direction.y
+			);
 
-		direction /= length;
+			direction /= length;
 
-		enemyBullets.emplace_back(
-			attackingEnemyShape.getPosition(),
-			direction
-		);
+			enemyBullets.emplace_back(
+				attackingEnemyShape.getPosition(),
+				direction
+			);
 
-		shootTimer = 0.f;
+			std::cout << "Enemy bullet created" << std::endl;
+			std::cout << "Number of enemy bullets: " << enemyBullets.size() << std::endl;
+			shootTimer = 0.f;
+		}
 	}
 }
-
+//<-------------------------------enemy------------------------------>
 class Enemies {
 
 public:
@@ -229,7 +233,7 @@ void Game::update()
 
 	for (auto& attackingenemy : attackingEnemies)
 	{
-		attackingenemy.update(deltaTime, player.getPosition(), enemyBullets);
+		attackingenemy.update(deltaTime, defendObject.getPosition(), enemyBullets);
 	}
 
 	for (auto& bullets : enemyBullets) {
@@ -245,14 +249,60 @@ void Game::update()
 		}
 	}
 
+	for (auto it = enemyBullets.begin(); it != enemyBullets.end();) {
+		if (it->enemyBulletShape.getPosition().y > window.getSize().y) {
+			it = enemyBullets.erase(it);
+		}
+		else ++it;
+	}
+
 	for (int i = 0; i < bullets.size(); i++) {
 		for (int j = 0; j < enemies.size(); j++) {
 			if (bullets[i].bulletShape.getGlobalBounds().intersects(enemies[j].enemyShape.getGlobalBounds()) && enemies[j].enemyShape.getPosition().x <= window.getSize().x)	 {
 				std::cout << "Bullet hit enemy" << std::endl;
 				bullets.erase(bullets.begin() + i);
+				i--;
 				enemies.erase(enemies.begin() + j);
+				j--;
 				break;
 			}
+		}
+	}
+
+	for (int i = 0; i < bullets.size(); i++) {
+		for (int j = 0; j < attackingEnemies.size(); j++) {
+			if (bullets[i].bulletShape.getGlobalBounds().intersects(attackingEnemies[j].attackingEnemyShape.getGlobalBounds()) && attackingEnemies[j].attackingEnemyShape.getPosition().x < 800) {
+				std::cout << "Bullet hit attacking enemy" << std::endl;
+				bullets.erase(bullets.begin() + i);
+				i--;
+				attackingEnemies.erase(attackingEnemies.begin() + j);
+				j--;
+				break;
+			}
+		}
+	}
+
+	for (int i = 0; i < enemyBullets.size(); i++) {
+		if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
+			enemyBullets.erase(enemyBullets.begin() + i);
+			i--;
+			std::cout << "Enemy bullet destroyed" << std::endl;
+		}
+	}
+
+	for (int i = 0; i < attackingEnemies.size(); i++) {
+		if (attackingEnemies[i].attackingEnemyShape.getPosition().x < 0) {
+			attackingEnemies.erase(attackingEnemies.begin() + i);
+			i--;
+			std::cout << "Attacking enemy erased" << std::endl;
+		}
+	}
+
+	for (int i = 0; i < enemies.size(); i++) {
+		if (enemies[i].enemyShape.getPosition().x < 0) {
+			enemies.erase(enemies.begin() + i);
+			i--;
+			std::cout << "Enemy destroyed" << std::endl;
 		}
 	}
 
