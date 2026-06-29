@@ -172,12 +172,15 @@ public:
 	bool onGround = true;
 	sf::Clock deltaTimeClock;
 	float deltaTime = 0.f;
+	float shakeTime = 0.15f;
 
 	sf::RectangleShape player;
 	sf::RectangleShape defendObject;
 	float defendObjectWidth;
 	sf::RectangleShape defendObjectHealthShape;
+	sf::Vector2f defendObjectPosition;
 	float defendObjectHealthWidth;
+	float defendObjectHealthHeight;
 	float defendObjectHealth = 100.0f;
 	sf::Vector2f playerVelocity = sf::Vector2f(500, 0);
 	sf::Vector2f jumpVelocity;
@@ -202,9 +205,11 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectWidth = defendObject.getSize().x;
 	defendObject.setFillColor(sf::Color::Blue);
 	defendObject.setPosition(0, windowHeight - defendObject.getSize().y);
+	defendObjectPosition = defendObject.getPosition();
 
 	defendObjectHealthShape.setSize(sf::Vector2f(100, 10));
 	defendObjectHealthWidth = defendObjectHealthShape.getSize().x;
+	defendObjectHealthHeight = defendObjectHealthShape.getSize().y;
 	defendObjectHealthShape.setFillColor(sf::Color::Red);
 	defendObjectHealthShape.setPosition(0, windowHeight - defendObject.getSize().y - 30.0);
 
@@ -304,13 +309,21 @@ void Game::update()
 	}
 
 	for (int i = 0; i < enemyBullets.size(); i++) {
+
 		if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
 			defendObjectHealth-=5;
-			//defendObjectHealthWidth -= 50.0;
-			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth , 10));
+			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth , defendObjectHealthHeight));
 			enemyBullets.erase(enemyBullets.begin() + i);
 			i--;
 			std::cout << "Enemy bullet destroyed" << std::endl;
+			shakeTime = 0.15f;
+
+			if (shakeTime > 0) {
+				shakeTime -= deltaTime;
+				float offset = (std::rand() % 7) - 3;
+				defendObject.setPosition(defendObjectPosition.x + offset, defendObjectPosition.y);
+			}
+			else defendObject.setPosition(defendObjectPosition);
 		}
 	}
 
