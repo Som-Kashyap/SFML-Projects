@@ -48,7 +48,7 @@ EnemyBullets::EnemyBullets(sf::Vector2f position, sf::Vector2f direction)
 	enemyBulletShape.setRadius(enemyBulletRadius);
 	enemyBulletShape.setPosition(position);
 
-	enemyBulletVelocity = direction * 200.f;
+	enemyBulletVelocity = direction * 500.f;
 }
 
 
@@ -92,9 +92,15 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 
 	if (shootTimer >= shootCooldown)
 	{
-		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x < 800) {
+
+		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x <= 600 && attackingEnemyShape.getPosition().x > objectPosition.x) {
+
+			sf::Vector2f target = objectPosition;  //enemy inaccuracy
+			target.x += (std::rand() % 151) - 20;
+			target.y += (std::rand() % 81) - 60;
+
 			sf::Vector2f direction =
-				objectPosition - attackingEnemyShape.getPosition();
+				target - attackingEnemyShape.getPosition();
 
 			float length = sqrt(
 				direction.x * direction.x +
@@ -105,8 +111,7 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 
 			enemyBullets.emplace_back(
 				attackingEnemyShape.getPosition(),
-				direction
-			);
+				direction);
 
 			std::cout << "Enemy bullet created" << std::endl;
 			std::cout << "Number of enemy bullets: " << enemyBullets.size() << std::endl;
