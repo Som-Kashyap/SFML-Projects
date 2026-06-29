@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include "Animations.h"
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
@@ -187,6 +188,16 @@ public:
 
 	float windowHeight;
 
+	sf::Texture PlayeridleTexture;
+	sf::Sprite playerSprite;
+
+	int currentFrame = 0;
+
+	float animationTimer = 0.f;
+	float animationSpeed = 0.18f;
+
+	Animation idleAnimation;
+
 	void update();
 	void handleEvents();
     void render();
@@ -215,8 +226,18 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 
 	player.setSize(sf::Vector2f(50, 50));
 	player.setFillColor(sf::Color::Green);
-	player.setPosition( static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y);
+	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y);
 
+
+	idleAnimation.load(
+		"resources/NES_Soldier_IDLE_EAST_strip4.png",
+		16,
+		24,
+		4,
+		0.15f
+	);
+	idleAnimation.getSprite().setScale(5.f, 5.f);
+	
 }
 
 void Game::handleEvents()
@@ -249,6 +270,10 @@ void Game::handleEvents()
 
 void Game::update()
 {
+
+	idleAnimation.update(deltaTime);
+	idleAnimation.getSprite().setPosition(player.getPosition().x, player.getPosition().y - 46.f);
+
 	for (auto& bullet : bullets) {
 		bullet.update(deltaTime);
 	}
@@ -397,13 +422,31 @@ void Game::update()
 			onGround = true;
 		}
 	}
+
+	animationTimer += deltaTime;
+
+	if (animationTimer >= animationSpeed)
+	{
+		animationTimer = 0.f;
+
+		currentFrame = (currentFrame + 1) % 4;
+
+		playerSprite.setTextureRect(
+			sf::IntRect(
+				currentFrame * 16,
+				0,
+				16,
+				24
+			)
+		);
+	}
 }
 
 void Game::render()
 {
 	
 		window.clear(sf::Color::Black);
-		window.draw(player);
+		window.draw(idleAnimation.getSprite());
 		window.draw(defendObject);
 		window.draw(defendObjectHealthShape);
 		
