@@ -72,19 +72,19 @@ public:
 	AttackingEnemies();
 
 	void update(float deltaTime, sf::Vector2f objectPosition,
-		std::vector<EnemyBullets>& enemyBullets);
+		std::vector<EnemyBullets>& enemyBullets , float defendObjectWidth);
 };
 
 AttackingEnemies::AttackingEnemies(){
 
-	attackingEnemyShape.setPosition(static_cast<float>(std::rand() % 900) + 850.0, 500.0);
+	attackingEnemyShape.setPosition(static_cast<float>(std::rand() % 900) + 850.0, 400.0);
 	attackingEnemyShape.setSize(sf::Vector2f(50 , 50));
 	attackingEnemyVelocity.x = -(std::rand() % 80 + 50);
 	attackingEnemyShape.setFillColor(sf::Color::Blue);
 
 }
 
-void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::vector<EnemyBullets>& enemyBullets)
+void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::vector<EnemyBullets>& enemyBullets , float defendObjectWidth)
 {
 	attackingEnemyShape.move(attackingEnemyVelocity * deltaTime);
 
@@ -93,11 +93,11 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 	if (shootTimer >= shootCooldown)
 	{
 
-		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x <= 600 && attackingEnemyShape.getPosition().x > objectPosition.x) {
+		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x <= 600 && attackingEnemyShape.getPosition().x > objectPosition.x + defendObjectWidth) {
 
 			sf::Vector2f target = objectPosition;  //enemy inaccuracy
 			target.x += (std::rand() % 151) - 20;
-			target.y += (std::rand() % 81) - 60;
+			target.y += (std::rand() % 81) - 50;
 
 			sf::Vector2f direction =
 				target - attackingEnemyShape.getPosition();
@@ -167,14 +167,22 @@ private:
 public:
 
     Game();
+
 	float gravity = 1200.f;
 	bool onGround = true;
 	sf::Clock deltaTimeClock;
 	float deltaTime = 0.f;
+
 	sf::RectangleShape player;
 	sf::RectangleShape defendObject;
+	float defendObjectWidth;
+	sf::RectangleShape defendObjectHealthShape;
+	float defendObjectHealthWidth;
+	float defendObjectHealth = 100.0f;
 	sf::Vector2f playerVelocity = sf::Vector2f(500, 0);
 	sf::Vector2f jumpVelocity;
+
+	float windowHeight;
 
 	void update();
 	void handleEvents();
@@ -188,9 +196,17 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	window.setFramerateLimit(60);
 	deltaTime = 0.f;
 
+	windowHeight = window.getSize().y;
+
 	defendObject.setSize(sf::Vector2f(100, 150));
+	defendObjectWidth = defendObject.getSize().x;
 	defendObject.setFillColor(sf::Color::Blue);
-	defendObject.setPosition(0, 600 - defendObject.getSize().y);
+	defendObject.setPosition(0, windowHeight - defendObject.getSize().y);
+
+	defendObjectHealthShape.setSize(sf::Vector2f(100, 10));
+	defendObjectHealthWidth = defendObjectHealthShape.getSize().x;
+	defendObjectHealthShape.setFillColor(sf::Color::Red);
+	defendObjectHealthShape.setPosition(0, windowHeight - defendObject.getSize().y - 30.0);
 
 	player.setSize(sf::Vector2f(50, 50));
 	player.setFillColor(sf::Color::Green);
@@ -238,7 +254,7 @@ void Game::update()
 
 	for (auto& attackingenemy : attackingEnemies)
 	{
-		attackingenemy.update(deltaTime, defendObject.getPosition(), enemyBullets);
+		attackingenemy.update(deltaTime, defendObject.getPosition(), enemyBullets , defendObjectWidth);
 	}
 
 	for (auto& bullets : enemyBullets) {
@@ -289,6 +305,9 @@ void Game::update()
 
 	for (int i = 0; i < enemyBullets.size(); i++) {
 		if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
+			defendObjectHealth-=5;
+			//defendObjectHealthWidth -= 50.0;
+			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth , 10));
 			enemyBullets.erase(enemyBullets.begin() + i);
 			i--;
 			std::cout << "Enemy bullet destroyed" << std::endl;
@@ -373,6 +392,7 @@ void Game::render()
 		window.clear(sf::Color::Black);
 		window.draw(player);
 		window.draw(defendObject);
+		window.draw(defendObjectHealthShape);
 		
 		for (auto& bullet : bullets) {
 			window.draw(bullet.bulletShape);
