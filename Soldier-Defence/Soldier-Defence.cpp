@@ -71,9 +71,11 @@ public:
 	float shootCooldown = 3.0f;
 
 	AttackingEnemies();
+	Animation attackingEnemyMove;
 
 	void update(float deltaTime, sf::Vector2f objectPosition,
 		std::vector<EnemyBullets>& enemyBullets , float defendObjectWidth);
+	void render(sf::RenderWindow& window);
 };
 
 AttackingEnemies::AttackingEnemies(){
@@ -83,11 +85,17 @@ AttackingEnemies::AttackingEnemies(){
 	attackingEnemyVelocity.x = -(std::rand() % 80 + 50);
 	attackingEnemyShape.setFillColor(sf::Color::Blue);
 
+	attackingEnemyMove.load("resources/D2.png", 32, 32, 4, 0.15);
+	attackingEnemyMove.getSprite().setScale(-3.f, 3.f);
+	
+
 }
 
 void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::vector<EnemyBullets>& enemyBullets , float defendObjectWidth)
 {
 	attackingEnemyShape.move(attackingEnemyVelocity * deltaTime);
+	attackingEnemyMove.update(deltaTime);
+	attackingEnemyMove.getSprite().setPosition(attackingEnemyShape.getPosition());
 
 	shootTimer += deltaTime;
 
@@ -110,9 +118,7 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 
 			direction /= length;
 
-			enemyBullets.emplace_back(
-				attackingEnemyShape.getPosition(),
-				direction);
+			enemyBullets.emplace_back(attackingEnemyShape.getPosition() , direction);
 
 			std::cout << "Enemy bullet created" << std::endl;
 			std::cout << "Number of enemy bullets: " << enemyBullets.size() << std::endl;
@@ -120,6 +126,11 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 		}
 	}
 }
+
+void AttackingEnemies::render(sf::RenderWindow& window) {
+	window.draw(attackingEnemyMove.getSprite());
+}
+
 //<-------------------------------enemy------------------------------>
 class Enemies {
 
@@ -167,7 +178,7 @@ void Enemies::update(float deltaTime, std::vector<EnemyBullets> &enemyBullets ,s
 	enemyShape.move(enemyVelocity * deltaTime);
 	enemyIdleAnimation.update(deltaTime);
 
-	enemyIdleAnimation.getSprite().setPosition(enemyShape.getPosition());
+	enemyIdleAnimation.getSprite().setPosition(enemyShape.getPosition().x , enemyShape.getPosition().y - 48.0);
 	
 }
 
@@ -424,7 +435,7 @@ void Game::update()
 
 			AttackingEnemies attackingEnemyObj;
 			std::cout << "Attacking enemy created" << std::endl;
-			attackingEnemies.emplace_back(attackingEnemyObj);
+			attackingEnemies.emplace_back();
 			std::cout << "Number of attacking enemies: " << attackingEnemies.size() << std::endl;
 
 		}
@@ -494,7 +505,7 @@ void Game::render()
 		}
 
 		for (auto& enemy : attackingEnemies) {
-			window.draw(enemy.attackingEnemyShape);
+			enemy.render(window);
 		}
 
 		for (auto& bullets : enemyBullets){

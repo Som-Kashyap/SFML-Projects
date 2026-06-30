@@ -17,6 +17,11 @@ Animation::Animation(Animation&& other) noexcept
 
     sprite.setTexture(texture);
     sprite.setTextureRect(other.sprite.getTextureRect());
+    sprite.setPosition(other.sprite.getPosition());
+    sprite.setScale(other.sprite.getScale());
+    sprite.setRotation(other.sprite.getRotation());
+    sprite.setOrigin(other.sprite.getOrigin());
+    sprite.setColor(other.sprite.getColor());
 
     frameWidth = other.frameWidth;
     frameHeight = other.frameHeight;
@@ -37,6 +42,11 @@ Animation& Animation::operator=(Animation&& other) noexcept
 
         sprite.setTexture(texture);
         sprite.setTextureRect(other.sprite.getTextureRect());
+        sprite.setPosition(other.sprite.getPosition());
+        sprite.setScale(other.sprite.getScale());
+        sprite.setRotation(other.sprite.getRotation());
+        sprite.setOrigin(other.sprite.getOrigin());
+        sprite.setColor(other.sprite.getColor());
 
         frameWidth = other.frameWidth;
         frameHeight = other.frameHeight;
