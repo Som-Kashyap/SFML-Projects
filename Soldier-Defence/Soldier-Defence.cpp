@@ -129,24 +129,50 @@ public:
 	sf::RectangleShape enemyShape;
 	sf::Vector2f enemyVelocity;
 	void update(float deltaTime, std::vector<EnemyBullets> &enemyBullets, sf::Vector2f playerPosition);
+	void render(sf::RenderWindow& window);
 
 	float shootTimer = 0.f;
 	float shootCooldown = 1.5f;
 
+	
+	Animation enemyIdleAnimation;
+
 };
 
-Enemies::Enemies() {
-	enemyShape.setSize(sf::Vector2f(50 , 50));
+Enemies::Enemies()
+{
+	bool loaded = enemyIdleAnimation.load("resources/SMS_Soldier_RUN_WEST_strip4.png",16, 24, 4, 0.15);
+
+	if (!loaded)
+	{
+		std::cout << "Animation failed to load\n";
+	}
+
+	enemyIdleAnimation.getSprite().setScale(5.f, 5.f);
+
+	enemyShape.setSize(sf::Vector2f(50, 50));
 	enemyShape.setFillColor(sf::Color::Red);
-	enemyShape.setPosition( static_cast<float>(std::rand()%950 + 850), 600 - enemyShape.getSize().y);
+
+	enemyShape.setPosition(
+		static_cast<float>(std::rand() % 950 + 850),
+		600 - enemyShape.getSize().y
+	);
+
 	enemyVelocity.x = -(std::rand() % 100 + 50);
-	enemyVelocity = sf::Vector2f(enemyVelocity.x, 0);
+	enemyVelocity.y = 0;
 }
 
 void Enemies::update(float deltaTime, std::vector<EnemyBullets> &enemyBullets ,sf::Vector2f playerPosition){
 
 	enemyShape.move(enemyVelocity * deltaTime);
+	enemyIdleAnimation.update(deltaTime);
+
+	enemyIdleAnimation.getSprite().setPosition(enemyShape.getPosition());
 	
+}
+
+void Enemies::render(sf::RenderWindow& window) {
+	window.draw(enemyIdleAnimation.getSprite());
 }
 
 //<---------------------------Game---------------------->
@@ -187,16 +213,19 @@ public:
 	sf::Vector2f jumpVelocity;
 
 	float windowHeight;
+	float windowWidth;
 
 	sf::Texture PlayeridleTexture;
 	sf::Sprite playerSprite;
 
-	int currentFrame = 0;
+	sf::Texture backgroundTexture;
+	sf::Sprite backgroundSprite;
+	
+	Animation idleAnimation;
 
 	float animationTimer = 0.f;
+	int currentFrame = 0;
 	float animationSpeed = 0.18f;
-
-	Animation idleAnimation;
 
 	void update();
 	void handleEvents();
@@ -211,6 +240,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	deltaTime = 0.f;
 
 	windowHeight = window.getSize().y;
+	windowWidth = window.getSize().x;
 
 	defendObject.setSize(sf::Vector2f(100, 150));
 	defendObjectWidth = defendObject.getSize().x;
@@ -228,6 +258,9 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	player.setFillColor(sf::Color::Green);
 	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y);
 
+	backgroundTexture.loadFromFile("resources/War3.png");
+	backgroundSprite.setTexture(backgroundTexture);
+	backgroundSprite.setScale( windowWidth/backgroundSprite.getGlobalBounds().width , windowHeight/backgroundSprite.getGlobalBounds().height);
 
 	idleAnimation.load(
 		"resources/NES_Soldier_IDLE_EAST_strip4.png",
@@ -237,7 +270,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 		0.15f
 	);
 	idleAnimation.getSprite().setScale(5.f, 5.f);
-	
+
 }
 
 void Game::handleEvents()
@@ -371,11 +404,12 @@ void Game::update()
 	if (enemies.size() == 0) {
 
 		spawnEnemy = true;
+		enemies.reserve(enemyCount);
 
 		for ( int i = 0; i < enemyCount; i++) {
-			Enemies enemy;
+			//Enemies enemy;
 			std::cout << "Enemy created" << std::endl;
-			enemies.emplace_back(enemy);
+			enemies.emplace_back();
 			std::cout << "Number of enemies: " << enemies.size() << std::endl;
 		}
 
@@ -446,6 +480,7 @@ void Game::render()
 {
 	
 		window.clear(sf::Color::Black);
+		window.draw(backgroundSprite);
 		window.draw(idleAnimation.getSprite());
 		window.draw(defendObject);
 		window.draw(defendObjectHealthShape);
@@ -455,7 +490,7 @@ void Game::render()
 		}
 
 		for (auto& enemy : enemies) {
-			window.draw(enemy.enemyShape);
+			enemy.render(window);
 		}
 
 		for (auto& enemy : attackingEnemies) {

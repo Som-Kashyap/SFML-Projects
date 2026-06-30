@@ -2,8 +2,53 @@
 
 Animation::Animation()
 {
+    frameWidth = 0;
+    frameHeight = 0;
+    totalFrames = 0;
     currentFrame = 0;
+
     animationTimer = 0.f;
+    animationSpeed = 0.f;
+}
+
+Animation::Animation(Animation&& other) noexcept
+{
+    texture = std::move(other.texture);
+
+    sprite.setTexture(texture);
+    sprite.setTextureRect(other.sprite.getTextureRect());
+
+    frameWidth = other.frameWidth;
+    frameHeight = other.frameHeight;
+
+    totalFrames = other.totalFrames;
+    currentFrame = other.currentFrame;
+
+    animationTimer = other.animationTimer;
+    animationSpeed = other.animationSpeed;
+}
+
+
+Animation& Animation::operator=(Animation&& other) noexcept
+{
+    if (this != &other)
+    {
+        texture = std::move(other.texture);
+
+        sprite.setTexture(texture);
+        sprite.setTextureRect(other.sprite.getTextureRect());
+
+        frameWidth = other.frameWidth;
+        frameHeight = other.frameHeight;
+
+        totalFrames = other.totalFrames;
+        currentFrame = other.currentFrame;
+
+        animationTimer = other.animationTimer;
+        animationSpeed = other.animationSpeed;
+    }
+
+    return *this;
 }
 
 bool Animation::load(const std::string& filename,

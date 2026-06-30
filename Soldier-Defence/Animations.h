@@ -22,6 +22,9 @@ public:
 
     Animation();
 
+    Animation(Animation&& other) noexcept;
+    Animation& operator=(Animation&& other) noexcept;
+
     bool load(const std::string& filename,
         int frameWidth,
         int frameHeight,
