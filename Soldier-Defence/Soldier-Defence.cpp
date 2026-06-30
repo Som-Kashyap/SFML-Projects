@@ -238,6 +238,8 @@ public:
 	sf::Sprite bulletSprite;
 	sf::Texture enemyBulletTexture;
 	sf::Sprite enemyBulletSprite;
+	sf::Texture defendObjectTexture;
+	sf::Sprite defendObjectSprite;
 	
 	Animation idleAnimation;
 
@@ -278,7 +280,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 
 	backgroundTexture.loadFromFile("resources/War4.png");
 	backgroundSprite.setTexture(backgroundTexture);
-	backgroundSprite.setScale( windowWidth/backgroundSprite.getGlobalBounds().width , windowHeight/backgroundSprite.getGlobalBounds().height);
+	backgroundSprite.setScale(windowWidth / backgroundSprite.getGlobalBounds().width, windowHeight / backgroundSprite.getGlobalBounds().height);
 
 	idleAnimation.load(
 		"resources/NES_Soldier_IDLE_EAST_strip4.png",
@@ -292,7 +294,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	if (!weaponTexture.loadFromFile("resources/Assaut-rifle-1-scoped.png")) std::cout << "Failed to load weapon texture" << std::endl;
 	weaponSprite.setTexture(weaponTexture);
 	weaponSprite.setScale(1., 1.);
-	
+
 	bulletTexture.loadFromFile("resources/bullet.png");
 	bulletSprite.setTexture(bulletTexture);
 	bulletSprite.setScale(0.015, 0.015);
@@ -300,6 +302,10 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	enemyBulletTexture.loadFromFile("resources/enemybullet.png");
 	enemyBulletSprite.setTexture(enemyBulletTexture);
 	enemyBulletSprite.setScale(-2., 2.);
+
+	defendObjectTexture.loadFromFile("resources/tank.png");
+	defendObjectSprite.setTexture(defendObjectTexture);
+	defendObjectSprite.setScale(4., 4.);
 
 }
 
@@ -333,10 +339,10 @@ void Game::handleEvents()
 
 void Game::update()
 {
-	
-	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-2.0);
+	defendObjectSprite.setPosition(defendObject.getPosition().x ,defendObject.getPosition().y+defendObjectSprite.getGlobalBounds().height-25.0);
+	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-16.0);
 	idleAnimation.update(deltaTime);
-	idleAnimation.getSprite().setPosition(player.getPosition().x, player.getPosition().y - 46.f);
+	idleAnimation.getSprite().setPosition(player.getPosition().x, player.getPosition().y - 55.f);
 
 	for (auto& bullet : bullets) {
 		bullet.update(deltaTime , bulletSprite);
@@ -348,7 +354,7 @@ void Game::update()
 
 	for (auto& attackingenemy : attackingEnemies)
 	{
-		attackingenemy.update(deltaTime, defendObject.getPosition(), enemyBullets , defendObjectWidth);
+		attackingenemy.update(deltaTime, defendObjectSprite.getPosition(), enemyBullets , defendObjectWidth);
 	}
 
 	for (auto& bullets : enemyBullets) {
@@ -514,7 +520,7 @@ void Game::render()
 		window.draw(backgroundSprite);
 		window.draw(idleAnimation.getSprite());
 		window.draw(weaponSprite);
-		window.draw(defendObject);
+		window.draw(defendObjectSprite);
 		window.draw(defendObjectHealthShape);
 		
 		for (auto& bullet : bullets) {
