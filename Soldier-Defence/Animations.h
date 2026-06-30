@@ -31,7 +31,7 @@ public:
         int totalFrames,
         float animationSpeed);
 
-    void update(float deltaTime);
+    void update(float deltaTime, bool paused=false);
 
     sf::Sprite& getSprite();
 }; 

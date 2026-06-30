@@ -85,8 +85,10 @@ bool Animation::load(const std::string& filename,
     return true;
 }
 
-void Animation::update(float deltaTime)
+void Animation::update(float deltaTime , bool paused)
 {
+    if (paused) return;
+
     animationTimer += deltaTime;
 
     if (animationTimer >= animationSpeed)

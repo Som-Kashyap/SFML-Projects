@@ -145,7 +145,7 @@ public:
 
 	float shootTimer = 0.f;
 	float shootCooldown = 1.5f;
-
+	bool isAttacking;
 	Animation enemyIdleAnimation;
 
 };
@@ -175,9 +175,9 @@ Enemies::Enemies()
 
 void Enemies::update(float deltaTime, std::vector<EnemyBullets> &enemyBullets ,sf::Vector2f playerPosition){
 
+	if (isAttacking) enemyIdleAnimation.update(deltaTime, true);
+	else enemyIdleAnimation.update(deltaTime, false);
 	enemyShape.move(enemyVelocity * deltaTime);
-	enemyIdleAnimation.update(deltaTime);
-
 	enemyIdleAnimation.getSprite().setPosition(enemyShape.getPosition().x , enemyShape.getPosition().y - 48.0);
 	
 }
@@ -432,15 +432,24 @@ void Game::update()
 	}
 
 	for (int i = 0; i < enemies.size(); i++) {
-		if (enemies[i].enemyShape.getPosition().x <= (defendObject.getPosition().x + defendObject.getSize().x)) {
+		if (enemies[i].enemyShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
+			enemies[i].isAttacking = true;
 			defendObjectHealth -= 1;
 			enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
+			
 		}
-		if (enemies[i].enemyShape.getPosition().x <= player.getPosition().x) {
-			if(playerHealth > 0) playerHealth -= 1;
+		else if (enemies[i].enemyShape.getGlobalBounds().intersects(player.getGlobalBounds())) {
+			enemies[i].isAttacking = true;
+			if (playerHealth > 0) playerHealth -= 1;
 			enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 			playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
+		}
+
+		else {
+			enemies[i].isAttacking = false;
+			enemies[i].enemyVelocity.x = -100;
+			enemies[i].enemyVelocity.y = 0.f;
 		}
 	}
 
