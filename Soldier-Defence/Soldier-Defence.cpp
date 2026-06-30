@@ -40,7 +40,7 @@ public:
 	sf::Vector2f enemyBulletVelocity;
 
 	EnemyBullets(sf::Vector2f position, sf::Vector2f direction);
-	void update(float deltaTime);
+	void update(float deltaTime , sf::Sprite &enemyBulletSprite);
 
 };
 
@@ -54,10 +54,10 @@ EnemyBullets::EnemyBullets(sf::Vector2f position, sf::Vector2f direction)
 }
 
 
-void EnemyBullets::update( float deltaTime){
+void EnemyBullets::update( float deltaTime , sf::Sprite &enemyBulletSprite){
 
 	enemyBulletShape.move(enemyBulletVelocity * deltaTime);
-
+	enemyBulletSprite.setPosition(enemyBulletShape.getPosition());
 }
 
 //<-------------------------attacking enemies----------->
@@ -236,6 +236,8 @@ public:
 	sf::Sprite weaponSprite;
 	sf::Texture bulletTexture;
 	sf::Sprite bulletSprite;
+	sf::Texture enemyBulletTexture;
+	sf::Sprite enemyBulletSprite;
 	
 	Animation idleAnimation;
 
@@ -274,7 +276,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	player.setFillColor(sf::Color::Green);
 	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y);
 
-	backgroundTexture.loadFromFile("resources/War3.png");
+	backgroundTexture.loadFromFile("resources/War4.png");
 	backgroundSprite.setTexture(backgroundTexture);
 	backgroundSprite.setScale( windowWidth/backgroundSprite.getGlobalBounds().width , windowHeight/backgroundSprite.getGlobalBounds().height);
 
@@ -294,6 +296,11 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	bulletTexture.loadFromFile("resources/bullet.png");
 	bulletSprite.setTexture(bulletTexture);
 	bulletSprite.setScale(0.015, 0.015);
+
+	enemyBulletTexture.loadFromFile("resources/enemybullet.png");
+	enemyBulletSprite.setTexture(enemyBulletTexture);
+	enemyBulletSprite.setScale(-2., 2.);
+
 }
 
 void Game::handleEvents()
@@ -345,7 +352,7 @@ void Game::update()
 	}
 
 	for (auto& bullets : enemyBullets) {
-		bullets.update(deltaTime);
+		bullets.update(deltaTime , enemyBulletSprite);
 	}
 
 	for (auto it = bullets.begin(); it != bullets.end();) {
@@ -523,7 +530,7 @@ void Game::render()
 		}
 
 		for (auto& bullets : enemyBullets){
-			window.draw(bullets.enemyBulletShape);
+			window.draw(enemyBulletSprite);
 		}
 		window.display();
 	
