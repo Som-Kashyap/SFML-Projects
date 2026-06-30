@@ -13,7 +13,7 @@ public:
 	sf::CircleShape bulletShape;
 	sf::Vector2f bulletVelocity;
 
-	void update(float deltaTime);
+	void update(float deltaTime , sf::Sprite &bulletSprite);
 
 };
 
@@ -25,8 +25,9 @@ Bullets::Bullets() {
 
 }
 
-void Bullets::update( float deltaTime) {
+void Bullets::update( float deltaTime , sf::Sprite &bulletSprite) {
 	bulletShape.move(bulletVelocity * deltaTime);
+	bulletSprite.setPosition(bulletShape.getPosition());
 }
 
 //<---------------------------enemy-bullets------------->
@@ -231,6 +232,10 @@ public:
 
 	sf::Texture backgroundTexture;
 	sf::Sprite backgroundSprite;
+	sf::Texture weaponTexture;
+	sf::Sprite weaponSprite;
+	sf::Texture bulletTexture;
+	sf::Sprite bulletSprite;
 	
 	Animation idleAnimation;
 
@@ -282,6 +287,13 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	);
 	idleAnimation.getSprite().setScale(5.f, 5.f);
 
+	if (!weaponTexture.loadFromFile("resources/Assaut-rifle-1-scoped.png")) std::cout << "Failed to load weapon texture" << std::endl;
+	weaponSprite.setTexture(weaponTexture);
+	weaponSprite.setScale(1., 1.);
+	
+	bulletTexture.loadFromFile("resources/bullet.png");
+	bulletSprite.setTexture(bulletTexture);
+	bulletSprite.setScale(0.015, 0.015);
 }
 
 void Game::handleEvents()
@@ -314,12 +326,13 @@ void Game::handleEvents()
 
 void Game::update()
 {
-
+	
+	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-2.0);
 	idleAnimation.update(deltaTime);
 	idleAnimation.getSprite().setPosition(player.getPosition().x, player.getPosition().y - 46.f);
 
 	for (auto& bullet : bullets) {
-		bullet.update(deltaTime);
+		bullet.update(deltaTime , bulletSprite);
 	}
 
 	for (auto& enemy : enemies) {
@@ -493,11 +506,12 @@ void Game::render()
 		window.clear(sf::Color::Black);
 		window.draw(backgroundSprite);
 		window.draw(idleAnimation.getSprite());
+		window.draw(weaponSprite);
 		window.draw(defendObject);
 		window.draw(defendObjectHealthShape);
 		
 		for (auto& bullet : bullets) {
-			window.draw(bullet.bulletShape);
+			window.draw(bulletSprite);
 		}
 
 		for (auto& enemy : enemies) {
