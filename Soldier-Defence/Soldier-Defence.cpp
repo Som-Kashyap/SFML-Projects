@@ -5,6 +5,13 @@
 #include <ctime>
 #include <cstdlib>
 
+enum class GameState {
+	Menu,
+	Start,
+	Pause,
+	Exit
+};
+
 // <--------------------------player-bullets----------------->
 class Bullets {
 
@@ -192,6 +199,7 @@ class Game {
 
 private:
 
+	GameState state;
 	sf::RenderWindow window;
 	std::vector<Bullets> bullets;
 	std::vector<Enemies> enemies;
@@ -248,6 +256,9 @@ public:
 	Animation idleAnimation;
 	Text enemiesKilledText;
 	Text enemyDronesKilledText;
+	Text menuText;
+	Text pauseText;
+	Text objectiveText;
 	int enemiesKilled = 0;
 	int enemyDronesKilled = 0;
 
@@ -266,6 +277,8 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 {
 	window.setFramerateLimit(60);
 	deltaTime = 0.f;
+
+	state = GameState::Menu;
 
 	windowHeight = window.getSize().y;
 	windowWidth = window.getSize().x;
@@ -305,7 +318,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 
 	if (!weaponTexture.loadFromFile("resources/StG 44.png")) std::cout << "Failed to load weapon texture" << std::endl;
 	weaponSprite.setTexture(weaponTexture);
-	weaponSprite.setScale(1., 1.);
+	weaponSprite.setScale(2., 2.);
 
 	bulletTexture.loadFromFile("resources/bullet.png");
 	bulletSprite.setTexture(bulletTexture);
@@ -319,9 +332,12 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectSprite.setTexture(defendObjectTexture);
 	defendObjectSprite.setScale(4., 4.);
 
-	enemiesKilledText.addDetails("Enemies Killed: 0","resources/arial.ttf", 24, sf::Color::White, sf::Vector2f(10, 20));
+	enemiesKilledText.addDetails("Enemies Killed: 0","resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(10, 20));
 	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(10, 50));
 
+	menuText.addDetails("START (Enter)", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2-80.f, windowHeight / 2));
+	pauseText.addDetails("PAUSED (P to resume)", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
+	objectiveText.addDetails("Defend the Tank!", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 60, 10));
 }
 
 void Game::handleEvents()
@@ -332,234 +348,257 @@ void Game::handleEvents()
 			window.close();
 		}
 
+		if (state == GameState::Start) {
 
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space && onGround)
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space && onGround)
+			{
+				onGround = false;
+				playerVelocity.y = -600.f;
+			}
+
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
+
+				Bullets bullet;
+				std::cout << "Bullet created" << std::endl;
+				bullet.bulletShape.setPosition(player.getPosition().x + player.getSize().x, player.getPosition().y + player.getSize().y / 2 - bullet.bulletShape.getRadius()-15);
+				bullet.bulletVelocity = sf::Vector2f(800.f, 0.f);
+				bullets.emplace_back(bullet);
+				std::cout << "Number of bullets: " << bullets.size() << std::endl;
+			}
+
+		}
+		if (event.type == sf::Event::KeyPressed)
 		{
-			onGround = false;
-			playerVelocity.y = -600.f;
+			if (event.key.code == sf::Keyboard::Enter)
+			{
+				if (state == GameState::Menu)
+					state = GameState::Start;
+				else if (state == GameState::Start)
+					state = GameState::Menu;
+			}
+
+			if (event.key.code == sf::Keyboard::P) {
+				if (state == GameState::Pause) state = GameState::Start;
+				else if (state == GameState::Start) state = GameState::Pause;
+			}
 		}
-
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
-
-			Bullets bullet;
-			std::cout << "Bullet created" << std::endl;
-			bullet.bulletShape.setPosition(player.getPosition().x + player.getSize().x, player.getPosition().y + player.getSize().y / 2 - bullet.bulletShape.getRadius());
-			bullet.bulletVelocity = sf::Vector2f(800.f, 0.f);
-			bullets.emplace_back(bullet);
-			std::cout << "Number of bullets: " << bullets.size() << std::endl;
 		}
-
-	}
+	
 }
 
 void Game::update()
 {
 	playerHealthShape.setPosition(player.getPosition().x+15, player.getPosition().y - 60.0);
 	defendObjectSprite.setPosition(defendObject.getPosition().x ,defendObject.getPosition().y+defendObjectSprite.getGlobalBounds().height-25.0);
-	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-16.0);
+	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-30.0);
 	idleAnimation.update(deltaTime);
 	idleAnimation.getSprite().setPosition(player.getPosition().x, player.getPosition().y - 55.f);
 
-	for (auto& bullet : bullets) {
-		bullet.update(deltaTime , bulletSprite);
-	}
-
-	for (auto& enemy : enemies) {
-		enemy.update(deltaTime, enemyBullets, player.getPosition());
-	}
-
-	for (auto& attackingenemy : attackingEnemies)
-	{
-		attackingenemy.update(deltaTime, defendObjectSprite.getPosition(), enemyBullets , defendObjectWidth);
-	}
-
-	for (auto& bullets : enemyBullets) {
-		bullets.update(deltaTime , enemyBulletSprite);
-	}
-
-	for (auto it = bullets.begin(); it != bullets.end();) {
-		if (it->bulletShape.getPosition().x > window.getSize().x) {
-			it = bullets.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
-
-	for (auto it = enemyBullets.begin(); it != enemyBullets.end();) {
-		if (it->enemyBulletShape.getPosition().y > window.getSize().y) {
-			it = enemyBullets.erase(it);
-		}
-		else ++it;
-	}
-
-	for (int i = 0; i < bullets.size(); i++) {
-		for (int j = 0; j < enemies.size(); j++) {
-			if (bullets[i].bulletShape.getGlobalBounds().intersects(enemies[j].enemyShape.getGlobalBounds()) && enemies[j].enemyShape.getPosition().x <= window.getSize().x)	 {
-				std::cout << "Bullet hit enemy" << std::endl;
-				enemiesKilled++;
-				enemiesKilledText.toString("Enemies Killed: " + std::to_string(enemiesKilled));
-				bullets.erase(bullets.begin() + i);
-				i--;
-				enemies.erase(enemies.begin() + j);
-				j--;
-				break;
-			}
-		}
-	}
-
-	for (int i = 0; i < bullets.size(); i++) {
-		for (int j = 0; j < attackingEnemies.size(); j++) {
-			if (bullets[i].bulletShape.getGlobalBounds().intersects(attackingEnemies[j].attackingEnemyShape.getGlobalBounds()) && attackingEnemies[j].attackingEnemyShape.getPosition().x < 800) {
-				enemyDronesKilled++;
-				enemyDronesKilledText.toString("Drones Killed: " + std::to_string(enemyDronesKilled));
-				std::cout << "Bullet hit attacking enemy" << std::endl;
-				bullets.erase(bullets.begin() + i);
-				i--;
-				attackingEnemies.erase(attackingEnemies.begin() + j);
-				j--;
-				break;
-			}
-		}
-	}
-
-	for (int i = 0; i < enemyBullets.size(); i++) {
-
-		if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
-			defendObjectHealth-=5;
-			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth , defendObjectHealthHeight));
-			enemyBullets.erase(enemyBullets.begin() + i);
-			i--;
-			std::cout << "Enemy bullet destroyed" << std::endl;
-			shakeTime = 0.15f;
-
-			if (shakeTime > 0) {
-				shakeTime -= deltaTime;
-				float offset = (std::rand() % 7) - 3;
-				defendObject.setPosition(defendObjectPosition.x + offset, defendObjectPosition.y);
-			}
-			else defendObject.setPosition(defendObjectPosition);
-
-		}
-	}
-
-	for (int i = 0; i < enemies.size(); i++) {
-		if (enemies[i].enemyShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
-			enemies[i].isAttacking = true;
-			defendObjectHealth -= 1;
-			enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
-			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
-			
-		}
-		else if (enemies[i].enemyShape.getGlobalBounds().intersects(player.getGlobalBounds())) {
-			enemies[i].isAttacking = true;
-			if (playerHealth > 0) playerHealth -= 1;
-			enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
-			playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
+	if (state == GameState::Start) {
+		for (auto& bullet : bullets) {
+			bullet.update(deltaTime, bulletSprite);
 		}
 
-		else {
-			enemies[i].isAttacking = false;
-			enemies[i].enemyVelocity.x = -100;
-			enemies[i].enemyVelocity.y = 0.f;
-		}
-	}
-
-	for (int i = 0; i < attackingEnemies.size(); i++) {
-		if (attackingEnemies[i].attackingEnemyShape.getPosition().x < 0) {
-			attackingEnemies.erase(attackingEnemies.begin() + i);
-			i--;
-			std::cout << "Attacking enemy erased" << std::endl;
-		}
-	}
-
-	for (int i = 0; i < enemies.size(); i++) {
-		if (enemies[i].enemyShape.getPosition().x < 0) {
-			enemies.erase(enemies.begin() + i);
-			i--;
-			std::cout << "Enemy destroyed" << std::endl;
-		}
-	}
-
-	if (enemies.size() == 0) {
-
-		spawnEnemy = true;
-		enemies.reserve(enemyCount);
-
-		for ( int i = 0; i < enemyCount; i++) {
-			//Enemies enemy;
-			std::cout << "Enemy created" << std::endl;
-			enemies.emplace_back();
-			std::cout << "Number of enemies: " << enemies.size() << std::endl;
+		for (auto& enemy : enemies) {
+			enemy.update(deltaTime, enemyBullets, player.getPosition());
 		}
 
-		spawnEnemy = false;
-	}
-
-	if (attackingEnemies.size() == 0) {
-
-		spawnAttackingEnemy = true;
-
-		for (int i = 0; i < attackingEnemyCount; i++) {
-
-			AttackingEnemies attackingEnemyObj;
-			std::cout << "Attacking enemy created" << std::endl;
-			attackingEnemies.emplace_back();
-			std::cout << "Number of attacking enemies: " << attackingEnemies.size() << std::endl;
-
-		}
-
-		spawnAttackingEnemy = false;
-
-	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && player.getPosition().x < 800 - player.getSize().x) {
-		player.move(playerVelocity.x * deltaTime , 0);
-	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && player.getPosition().x > 0) {
-		player.move(-playerVelocity.x * deltaTime , 0);
-	}
-
-	
-
-	if (!onGround)
-	{
-		playerVelocity.y += gravity * deltaTime;
-		player.move(0.f, playerVelocity.y * deltaTime);
-
-		// Check if player reached the ground
-		if (player.getPosition().y + player.getSize().y >= window.getSize().y)
+		for (auto& attackingenemy : attackingEnemies)
 		{
-			player.setPosition(player.getPosition().x, window.getSize().y - player.getSize().y);
-			playerVelocity.y = 0.f;
-			onGround = true;
+			attackingenemy.update(deltaTime, defendObjectSprite.getPosition(), enemyBullets, defendObjectWidth);
+		}
+
+		for (auto& bullets : enemyBullets) {
+			bullets.update(deltaTime, enemyBulletSprite);
+		}
+
+		for (auto it = bullets.begin(); it != bullets.end();) {
+			if (it->bulletShape.getPosition().x > window.getSize().x) {
+				it = bullets.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
+
+		for (auto it = enemyBullets.begin(); it != enemyBullets.end();) {
+			if (it->enemyBulletShape.getPosition().y > window.getSize().y) {
+				it = enemyBullets.erase(it);
+			}
+			else ++it;
+		}
+
+		for (int i = 0; i < bullets.size(); i++) {
+			for (int j = 0; j < enemies.size(); j++) {
+				if (bullets[i].bulletShape.getGlobalBounds().intersects(enemies[j].enemyShape.getGlobalBounds()) && enemies[j].enemyShape.getPosition().x <= window.getSize().x) {
+					std::cout << "Bullet hit enemy" << std::endl;
+					enemiesKilled++;
+					enemiesKilledText.toString("Enemies Killed: " + std::to_string(enemiesKilled));
+					bullets.erase(bullets.begin() + i);
+					i--;
+					enemies.erase(enemies.begin() + j);
+					j--;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < bullets.size(); i++) {
+			for (int j = 0; j < attackingEnemies.size(); j++) {
+				if (bullets[i].bulletShape.getGlobalBounds().intersects(attackingEnemies[j].attackingEnemyShape.getGlobalBounds()) && attackingEnemies[j].attackingEnemyShape.getPosition().x < 800) {
+					enemyDronesKilled++;
+					enemyDronesKilledText.toString("Drones Killed: " + std::to_string(enemyDronesKilled));
+					std::cout << "Bullet hit attacking enemy" << std::endl;
+					bullets.erase(bullets.begin() + i);
+					i--;
+					attackingEnemies.erase(attackingEnemies.begin() + j);
+					j--;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < enemyBullets.size(); i++) {
+
+			if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
+				defendObjectHealth -= 5;
+				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
+				enemyBullets.erase(enemyBullets.begin() + i);
+				i--;
+				std::cout << "Enemy bullet destroyed" << std::endl;
+				shakeTime = 0.15f;
+
+				if (shakeTime > 0) {
+					shakeTime -= deltaTime;
+					float offset = (float)(std::rand() % 7) - 3;
+					defendObject.setPosition(defendObjectPosition.x + offset, defendObjectPosition.y);
+				}
+				else defendObject.setPosition(defendObjectPosition);
+
+			}
+		}
+
+		for (int i = 0; i < enemies.size(); i++) {
+			if (enemies[i].enemyShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
+				enemies[i].isAttacking = true;
+				defendObjectHealth -= 1;
+				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
+				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
+
+			}
+			else if (enemies[i].enemyShape.getGlobalBounds().intersects(player.getGlobalBounds())) {
+				enemies[i].isAttacking = true;
+				if (playerHealth > 0) playerHealth -= 1;
+				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
+				playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
+			}
+
+			else {
+				enemies[i].isAttacking = false;
+				enemies[i].enemyVelocity.x = -100;
+				enemies[i].enemyVelocity.y = 0.f;
+			}
+		}
+
+		for (int i = 0; i < attackingEnemies.size(); i++) {
+			if (attackingEnemies[i].attackingEnemyShape.getPosition().x < 0) {
+				attackingEnemies.erase(attackingEnemies.begin() + i);
+				i--;
+				std::cout << "Attacking enemy erased" << std::endl;
+			}
+		}
+
+		for (int i = 0; i < enemies.size(); i++) {
+			if (enemies[i].enemyShape.getPosition().x < 0) {
+				enemies.erase(enemies.begin() + i);
+				i--;
+				std::cout << "Enemy destroyed" << std::endl;
+			}
+		}
+
+		if (enemies.size() == 0) {
+
+			spawnEnemy = true;
+			enemies.reserve(enemyCount);
+
+			for (int i = 0; i < enemyCount; i++) {
+				//Enemies enemy;
+				std::cout << "Enemy created" << std::endl;
+				enemies.emplace_back();
+				std::cout << "Number of enemies: " << enemies.size() << std::endl;
+			}
+
+			spawnEnemy = false;
+		}
+
+		if (attackingEnemies.size() == 0) {
+
+			spawnAttackingEnemy = true;
+
+			for (int i = 0; i < attackingEnemyCount; i++) {
+
+				AttackingEnemies attackingEnemyObj;
+				std::cout << "Attacking enemy created" << std::endl;
+				attackingEnemies.emplace_back();
+				std::cout << "Number of attacking enemies: " << attackingEnemies.size() << std::endl;
+
+			}
+
+			spawnAttackingEnemy = false;
+
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && player.getPosition().x < 800 - player.getSize().x) {
+			player.move(playerVelocity.x * deltaTime, 0);
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && player.getPosition().x > 0) {
+			player.move(-playerVelocity.x * deltaTime, 0);
+		}
+
+
+
+		if (!onGround)
+		{
+			playerVelocity.y += gravity * deltaTime;
+			player.move(0.f, playerVelocity.y * deltaTime);
+
+			// Check if player reached the ground
+			if (player.getPosition().y + player.getSize().y >= window.getSize().y)
+			{
+				player.setPosition(player.getPosition().x, window.getSize().y - player.getSize().y);
+				playerVelocity.y = 0.f;
+				onGround = true;
+			}
+		}
+
+		animationTimer += deltaTime;
+
+		if (animationTimer >= animationSpeed)
+		{
+			animationTimer = 0.f;
+
+			currentFrame = (currentFrame + 1) % 4;
+
+			playerSprite.setTextureRect(
+				sf::IntRect(
+					currentFrame * 16,
+					0,
+					16,
+					24
+				)
+			);
 		}
 	}
-
-	animationTimer += deltaTime;
-
-	if (animationTimer >= animationSpeed)
-	{
-		animationTimer = 0.f;
-
-		currentFrame = (currentFrame + 1) % 4;
-
-		playerSprite.setTextureRect(
-			sf::IntRect(
-				currentFrame * 16,
-				0,
-				16,
-				24
-			)
-		);
-	}
+	
 }
 
 void Game::render()
 {
-	
-		window.clear(sf::Color::Black);
+	window.clear(sf::Color::Black);
+
+	if (state == GameState::Start) {
+
 		window.draw(backgroundSprite);
 		window.draw(idleAnimation.getSprite());
 		window.draw(weaponSprite);
@@ -568,7 +607,8 @@ void Game::render()
 		window.draw(playerHealthShape);
 		window.draw(enemiesKilledText.getText());
 		window.draw(enemyDronesKilledText.getText());
-		
+		window.draw(objectiveText.getText());
+
 		for (auto& bullet : bullets) {
 			window.draw(bulletSprite);
 		}
@@ -581,11 +621,20 @@ void Game::render()
 			enemy.render(window);
 		}
 
-		for (auto& bullets : enemyBullets){
+		for (auto& bullets : enemyBullets) {
 			window.draw(enemyBulletSprite);
 		}
-		window.display();
-	
+	}
+
+	else if (state == GameState::Menu) {
+		window.draw(menuText.getText());
+	}
+
+	else if (state == GameState::Pause) {
+		window.draw(pauseText.getText());
+	}
+	window.display();
+
 }
 
 void Game::rungame() {
