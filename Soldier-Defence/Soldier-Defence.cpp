@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "Animations.h"
+#include "Text.h"
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
@@ -245,6 +246,10 @@ public:
 	sf::Sprite defendObjectSprite;
 	
 	Animation idleAnimation;
+	Text enemiesKilledText;
+	Text enemyDronesKilledText;
+	int enemiesKilled = 0;
+	int enemyDronesKilled = 0;
 
 	float animationTimer = 0.f;
 	int currentFrame = 0;
@@ -313,6 +318,9 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectTexture.loadFromFile("resources/tank.png");
 	defendObjectSprite.setTexture(defendObjectTexture);
 	defendObjectSprite.setScale(4., 4.);
+
+	enemiesKilledText.addDetails("Enemies Killed: 0","resources/arial.ttf", 24, sf::Color::White, sf::Vector2f(10, 20));
+	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(10, 50));
 
 }
 
@@ -389,6 +397,8 @@ void Game::update()
 		for (int j = 0; j < enemies.size(); j++) {
 			if (bullets[i].bulletShape.getGlobalBounds().intersects(enemies[j].enemyShape.getGlobalBounds()) && enemies[j].enemyShape.getPosition().x <= window.getSize().x)	 {
 				std::cout << "Bullet hit enemy" << std::endl;
+				enemiesKilled++;
+				enemiesKilledText.toString("Enemies Killed: " + std::to_string(enemiesKilled));
 				bullets.erase(bullets.begin() + i);
 				i--;
 				enemies.erase(enemies.begin() + j);
@@ -401,6 +411,8 @@ void Game::update()
 	for (int i = 0; i < bullets.size(); i++) {
 		for (int j = 0; j < attackingEnemies.size(); j++) {
 			if (bullets[i].bulletShape.getGlobalBounds().intersects(attackingEnemies[j].attackingEnemyShape.getGlobalBounds()) && attackingEnemies[j].attackingEnemyShape.getPosition().x < 800) {
+				enemyDronesKilled++;
+				enemyDronesKilledText.toString("Drones Killed: " + std::to_string(enemyDronesKilled));
 				std::cout << "Bullet hit attacking enemy" << std::endl;
 				bullets.erase(bullets.begin() + i);
 				i--;
@@ -554,6 +566,8 @@ void Game::render()
 		window.draw(defendObjectSprite);
 		window.draw(defendObjectHealthShape);
 		window.draw(playerHealthShape);
+		window.draw(enemiesKilledText.getText());
+		window.draw(enemyDronesKilledText.getText());
 		
 		for (auto& bullet : bullets) {
 			window.draw(bulletSprite);

@@ -21,9 +21,15 @@
     <ClCompile Include="Animations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

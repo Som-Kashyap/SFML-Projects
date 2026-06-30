@@ -147,9 +147,11 @@
   <ItemGroup>
     <ClCompile Include="Animations.cpp" />
     <ClCompile Include="Soldier-Defence.cpp" />
+    <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animations.h" />
+    <ClInclude Include="Text.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
