@@ -146,7 +146,6 @@ public:
 	float shootTimer = 0.f;
 	float shootCooldown = 1.5f;
 
-	
 	Animation enemyIdleAnimation;
 
 };
@@ -221,6 +220,10 @@ public:
 	float defendObjectHealthWidth;
 	float defendObjectHealthHeight;
 	float defendObjectHealth = 100.0f;
+	sf::RectangleShape playerHealthShape;
+	float playerHealthWidth;
+	float playerHealthHeight;
+	float playerHealth = 100.f;
 	sf::Vector2f playerVelocity = sf::Vector2f(500, 0);
 	sf::Vector2f jumpVelocity;
 
@@ -272,7 +275,11 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectHealthWidth = defendObjectHealthShape.getSize().x;
 	defendObjectHealthHeight = defendObjectHealthShape.getSize().y;
 	defendObjectHealthShape.setFillColor(sf::Color::Red);
-	defendObjectHealthShape.setPosition(0, windowHeight - defendObject.getSize().y - 30.0);
+	defendObjectHealthShape.setPosition(0, windowHeight - defendObject.getSize().y+30);
+
+	playerHealthShape.setSize(sf::Vector2f(50, 10));
+	playerHealthHeight = playerHealthShape.getSize().y;
+	playerHealthShape.setFillColor(sf::Color::Red);
 
 	player.setSize(sf::Vector2f(50, 50));
 	player.setFillColor(sf::Color::Green);
@@ -291,7 +298,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	);
 	idleAnimation.getSprite().setScale(5.f, 5.f);
 
-	if (!weaponTexture.loadFromFile("resources/Assaut-rifle-1-scoped.png")) std::cout << "Failed to load weapon texture" << std::endl;
+	if (!weaponTexture.loadFromFile("resources/StG 44.png")) std::cout << "Failed to load weapon texture" << std::endl;
 	weaponSprite.setTexture(weaponTexture);
 	weaponSprite.setScale(1., 1.);
 
@@ -339,6 +346,7 @@ void Game::handleEvents()
 
 void Game::update()
 {
+	playerHealthShape.setPosition(player.getPosition().x+15, player.getPosition().y - 60.0);
 	defendObjectSprite.setPosition(defendObject.getPosition().x ,defendObject.getPosition().y+defendObjectSprite.getGlobalBounds().height-25.0);
 	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-16.0);
 	idleAnimation.update(deltaTime);
@@ -419,6 +427,20 @@ void Game::update()
 				defendObject.setPosition(defendObjectPosition.x + offset, defendObjectPosition.y);
 			}
 			else defendObject.setPosition(defendObjectPosition);
+
+		}
+	}
+
+	for (int i = 0; i < enemies.size(); i++) {
+		if (enemies[i].enemyShape.getPosition().x <= (defendObject.getPosition().x + defendObject.getSize().x)) {
+			defendObjectHealth -= 1;
+			enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
+			defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
+		}
+		if (enemies[i].enemyShape.getPosition().x <= player.getPosition().x) {
+			if(playerHealth > 0) playerHealth -= 1;
+			enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
+			playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
 		}
 	}
 
@@ -522,6 +544,7 @@ void Game::render()
 		window.draw(weaponSprite);
 		window.draw(defendObjectSprite);
 		window.draw(defendObjectHealthShape);
+		window.draw(playerHealthShape);
 		
 		for (auto& bullet : bullets) {
 			window.draw(bulletSprite);
