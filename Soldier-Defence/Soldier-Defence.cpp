@@ -9,6 +9,7 @@ enum class GameState {
 	Menu,
 	Start,
 	Pause,
+	Gameover,
 	Exit
 };
 
@@ -111,7 +112,7 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 	if (shootTimer >= shootCooldown)
 	{
 
-		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x <= 600 && attackingEnemyShape.getPosition().x > objectPosition.x + defendObjectWidth) {
+		if (attackingEnemyShape.getPosition().x > 0 && attackingEnemyShape.getPosition().x < 700 && attackingEnemyShape.getPosition().x > objectPosition.x + defendObjectWidth) {
 
 			sf::Vector2f target = objectPosition;  //enemy inaccuracy
 			target.x += (std::rand() % 151) - 20;
@@ -259,6 +260,7 @@ public:
 	Text menuText;
 	Text pauseText;
 	Text objectiveText;
+	Text gameoverText;
 	int enemiesKilled = 0;
 	int enemyDronesKilled = 0;
 
@@ -295,7 +297,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectHealthShape.setFillColor(sf::Color::Red);
 	defendObjectHealthShape.setPosition(0, windowHeight - defendObject.getSize().y+30);
 
-	playerHealthShape.setSize(sf::Vector2f(50, 10));
+	playerHealthShape.setSize(sf::Vector2f(playerHealth, 10));
 	playerHealthHeight = playerHealthShape.getSize().y;
 	playerHealthShape.setFillColor(sf::Color::Red);
 
@@ -337,7 +339,8 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 
 	menuText.addDetails("START (Enter)", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2-80.f, windowHeight / 2));
 	pauseText.addDetails("PAUSED (P to resume)", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
-	objectiveText.addDetails("Defend the Tank!", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 60, 10));
+	objectiveText.addDetails("Defend the Tank!", "resources/arial.ttf", 24, sf::Color::Cyan, sf::Vector2f(windowWidth / 2 - 60, 10));
+	gameoverText.addDetails("GAME OVER!", "resources/arial.ttf", 24, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
 }
 
 void Game::handleEvents()
@@ -481,7 +484,8 @@ void Game::update()
 		for (int i = 0; i < enemies.size(); i++) {
 			if (enemies[i].enemyShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
 				enemies[i].isAttacking = true;
-				defendObjectHealth -= 1;
+				if(defendObjectHealth > 0)  defendObjectHealth -= 1;
+				if (defendObjectHealth == 0) state = GameState::Gameover;
 				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
 
@@ -489,8 +493,10 @@ void Game::update()
 			else if (enemies[i].enemyShape.getGlobalBounds().intersects(player.getGlobalBounds())) {
 				enemies[i].isAttacking = true;
 				if (playerHealth > 0) playerHealth -= 1;
-				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 				playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
+				if (playerHealth == 0 ) state = GameState::Gameover;
+				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
+				
 			}
 
 			else {
@@ -632,6 +638,10 @@ void Game::render()
 
 	else if (state == GameState::Pause) {
 		window.draw(pauseText.getText());
+	}
+
+	else if (state == GameState::Gameover) {
+		window.draw(gameoverText.getText());
 	}
 	window.display();
 
