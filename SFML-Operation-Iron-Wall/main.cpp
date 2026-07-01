@@ -291,6 +291,7 @@ public:
 	void update();
 	void handleEvents();
     void render();
+	void resetGame();
 	void rungame();
 
 };
@@ -429,12 +430,11 @@ void Game::handleEvents()
 			{
 				if (state == GameState::Menu)
 					state = GameState::Start;
-				else if (state == GameState::Start)
-					state = GameState::Menu;
 				else if (state == GameState::About)
 					state = GameState::Menu;
 				else if (state == GameState::Gameover)
 					state = GameState::Menu;
+				    resetGame();
 				    backgroundMusic.play();
 			}
 
@@ -542,6 +542,7 @@ void Game::update()
 				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
 				if (defendObjectHealth == 0) {
 					state = GameState::Gameover;
+					resetGame();
 					gameoverSound.play();
 					backgroundMusic.stop();
 				}
@@ -569,6 +570,8 @@ void Game::update()
 				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
 				if (defendObjectHealth == 0) {
 					state = GameState::Gameover;
+					resetGame();
+					player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y - 20);
 					gameoverSound.play();
 					backgroundMusic.stop();
 				}
@@ -583,6 +586,7 @@ void Game::update()
 				playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
 				if (playerHealth == 0 ) {
 					state = GameState::Gameover;
+					resetGame();
 					gameoverSound.play();
 					backgroundMusic.stop();
 				}
@@ -688,6 +692,25 @@ void Game::update()
 		}
 	}
 	
+}
+
+void Game::resetGame() {
+
+	playerHealth = 100;
+	defendObjectHealth = 100;
+	playerHealthText.toString("Player Health: 100");
+	defendObjectHealthText.toString("Tank Health: 100");
+	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y - 20);
+	enemiesKilled = 0;
+	enemyDronesKilled = 0;
+	enemiesKilledText.toString("Enemies Killed: 0");
+	enemyDronesKilledText.toString("Enemy Drones Killed: 0");
+	enemies.clear();
+	bullets.clear();
+	attackingEnemies.clear();
+	enemyBullets.clear();
+	showBlood = false;
+
 }
 
 void Game::render()
