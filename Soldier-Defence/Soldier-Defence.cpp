@@ -36,7 +36,7 @@ Bullets::Bullets() {
 
 void Bullets::update( float deltaTime , sf::Sprite &bulletSprite) {
 	bulletShape.move(bulletVelocity * deltaTime);
-	bulletSprite.setPosition(bulletShape.getPosition());
+	bulletSprite.setPosition(bulletShape.getPosition().x , bulletShape.getPosition().y-12);
 }
 
 //<---------------------------enemy-bullets------------->
@@ -253,6 +253,8 @@ public:
 	sf::Sprite enemyBulletSprite;
 	sf::Texture defendObjectTexture;
 	sf::Sprite defendObjectSprite;
+	sf::Texture menuTexture;
+	sf::Sprite menuSprite;
 	
 	Animation idleAnimation;
 	Text enemiesKilledText;
@@ -296,7 +298,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectHealthWidth = defendObjectHealthShape.getSize().x;
 	defendObjectHealthHeight = defendObjectHealthShape.getSize().y;
 	defendObjectHealthShape.setFillColor(sf::Color::Red);
-	defendObjectHealthShape.setPosition(0, windowHeight - defendObject.getSize().y+30);
+	defendObjectHealthShape.setPosition(10, windowHeight - defendObject.getSize().y+30);
 
 	playerHealthShape.setSize(sf::Vector2f(playerHealth, 10));
 	playerHealthHeight = playerHealthShape.getSize().y;
@@ -335,13 +337,17 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectSprite.setTexture(defendObjectTexture);
 	defendObjectSprite.setScale(4., 4.);
 
+	menuTexture.loadFromFile("resources/War.png");
+	menuSprite.setTexture(menuTexture);
+	menuSprite.setScale(windowWidth / menuSprite.getGlobalBounds().width, windowHeight / menuSprite.getGlobalBounds().height);
+
 	enemiesKilledText.addDetails("Enemies Killed: 0","resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 80));
 	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 50));
 
-	menuText.addDetails("START (Enter)", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(windowWidth / 2-80.f, windowHeight / 2));
-	pauseText.addDetails("PAUSED (P to resume)", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
+	menuText.addDetails("START (Enter)", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color(0,0,82), sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
+	pauseText.addDetails("PAUSED (P to resume)", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color(0, 0, 82), sf::Vector2f(windowWidth / 2 - 200.f, windowHeight / 2));
 	objectiveText.addDetails("Defend the Tank!", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Cyan, sf::Vector2f(windowWidth / 2 - 100.f, 10));
-	gameoverText.addDetails("GAME OVER!", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 100.f, windowHeight / 2));
+	gameoverText.addDetails("GAME OVER!", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
 	playerHealthText.addDetails("Player Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 50));
 }
 
@@ -641,11 +647,14 @@ void Game::render()
 	}
 
 	else if (state == GameState::Menu) {
+		window.draw(menuSprite);
 		window.draw(menuText.getText());
 	}
 
 	else if (state == GameState::Pause) {
+		window.draw(menuSprite);
 		window.draw(pauseText.getText());
+		
 	}
 
 	else if (state == GameState::Gameover) {
