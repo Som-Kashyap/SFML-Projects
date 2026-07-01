@@ -1,7 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="Soldier-Defence.vcxproj" Id="07a48cf4-e11d-41f0-916a-69f7b231fa0f" />
-</Solution>
