@@ -261,6 +261,7 @@ public:
 	Text pauseText;
 	Text objectiveText;
 	Text gameoverText;
+	Text playerHealthText;
 	int enemiesKilled = 0;
 	int enemyDronesKilled = 0;
 
@@ -334,13 +335,14 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	defendObjectSprite.setTexture(defendObjectTexture);
 	defendObjectSprite.setScale(4., 4.);
 
-	enemiesKilledText.addDetails("Enemies Killed: 0","resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(10, 20));
-	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(10, 50));
+	enemiesKilledText.addDetails("Enemies Killed: 0","resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 80));
+	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 50));
 
-	menuText.addDetails("START (Enter)", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2-80.f, windowHeight / 2));
-	pauseText.addDetails("PAUSED (P to resume)", "resources/arial.ttf", 24, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
-	objectiveText.addDetails("Defend the Tank!", "resources/arial.ttf", 24, sf::Color::Cyan, sf::Vector2f(windowWidth / 2 - 60, 10));
-	gameoverText.addDetails("GAME OVER!", "resources/arial.ttf", 24, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
+	menuText.addDetails("START (Enter)", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(windowWidth / 2-80.f, windowHeight / 2));
+	pauseText.addDetails("PAUSED (P to resume)", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
+	objectiveText.addDetails("Defend the Tank!", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Cyan, sf::Vector2f(windowWidth / 2 - 100.f, 10));
+	gameoverText.addDetails("GAME OVER!", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 100.f, windowHeight / 2));
+	playerHealthText.addDetails("Player Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 50));
 }
 
 void Game::handleEvents()
@@ -363,7 +365,7 @@ void Game::handleEvents()
 
 				Bullets bullet;
 				std::cout << "Bullet created" << std::endl;
-				bullet.bulletShape.setPosition(player.getPosition().x + player.getSize().x, player.getPosition().y + player.getSize().y / 2 - bullet.bulletShape.getRadius()-15);
+				bullet.bulletShape.setPosition(player.getPosition().x + player.getSize().x, player.getPosition().y + player.getSize().y / 2 - bullet.bulletShape.getRadius() - 15);
 				bullet.bulletVelocity = sf::Vector2f(800.f, 0.f);
 				bullets.emplace_back(bullet);
 				std::cout << "Number of bullets: " << bullets.size() << std::endl;
@@ -384,9 +386,13 @@ void Game::handleEvents()
 				if (state == GameState::Pause) state = GameState::Start;
 				else if (state == GameState::Start) state = GameState::Pause;
 			}
+
+			if (event.key.code == sf::Keyboard::Escape) {
+				state = GameState::Exit;
+				window.close();
+			}
 		}
-		}
-	
+	}
 }
 
 void Game::update()
@@ -493,6 +499,7 @@ void Game::update()
 			else if (enemies[i].enemyShape.getGlobalBounds().intersects(player.getGlobalBounds())) {
 				enemies[i].isAttacking = true;
 				if (playerHealth > 0) playerHealth -= 1;
+				playerHealthText.toString("Player Health: " + std::to_string(playerHealth));
 				playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
 				if (playerHealth == 0 ) state = GameState::Gameover;
 				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
@@ -614,6 +621,7 @@ void Game::render()
 		window.draw(enemiesKilledText.getText());
 		window.draw(enemyDronesKilledText.getText());
 		window.draw(objectiveText.getText());
+		window.draw(playerHealthText.getText());
 
 		for (auto& bullet : bullets) {
 			window.draw(bulletSprite);

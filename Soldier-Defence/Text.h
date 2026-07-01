@@ -13,5 +13,5 @@ public:
 
 	sf::Text getText();
 
-	void toString(sf::String);
+	void toString(sf::String );
 };
