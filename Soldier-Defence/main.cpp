@@ -6,6 +6,7 @@
 #include <cstdlib>
 
 enum class GameState {
+	About,
 	Menu,
 	Start,
 	Pause,
@@ -257,6 +258,8 @@ public:
 	sf::Sprite menuSprite;
 	sf::Texture bloodTexture;
 	sf::Sprite bloodSprite;
+	sf::Texture aboutTexture;
+	sf::Sprite aboutSprite;
 	bool showBlood = false;
 
 	Animation idleAnimation;
@@ -268,6 +271,7 @@ public:
 	Text gameoverText;
 	Text playerHealthText;
 	Text defendObjectHealthText;
+	Text aboutText;
 	int enemiesKilled = 0;
 	int enemyDronesKilled = 0;
 
@@ -282,12 +286,12 @@ public:
 
 };
 
-Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
+Game::Game() :window(sf::VideoMode(800, 600), "Operation Iron Wall")
 {
 	window.setFramerateLimit(60);
 	deltaTime = 0.f;
 
-	state = GameState::Menu;
+	state = GameState::About;
 
 	windowHeight = window.getSize().y;
 	windowWidth = window.getSize().x;
@@ -349,15 +353,20 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	bloodSprite.setTexture(bloodTexture);
 	bloodSprite.setScale(windowWidth / bloodSprite.getGlobalBounds().width, windowHeight / bloodSprite.getGlobalBounds().height);
 
+	aboutTexture.loadFromFile("resources/WCP_Example.png");
+	aboutSprite.setTexture(aboutTexture);
+	aboutSprite.setScale(windowWidth / aboutSprite.getGlobalBounds().width, windowHeight / aboutSprite.getGlobalBounds().height);
+
 	enemiesKilledText.addDetails("Enemies Killed: 0","resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 80));
 	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 50));
 
-	menuText.addDetails("START (Enter)", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color(0,0,82), sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
-	pauseText.addDetails("PAUSED (P to resume)", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color(0, 0, 82), sf::Vector2f(windowWidth / 2 - 200.f, windowHeight / 2));
+	menuText.addDetails("START (Enter)", "resources/PixelOperatorMonoHB8.ttf", 30, sf::Color(0,0,82), sf::Vector2f(windowWidth / 2 - 150.f, windowHeight / 2));
+	pauseText.addDetails("PAUSED (P to resume)", "resources/PixelOperatorMonoHB8.ttf", 30, sf::Color(0, 0, 82), sf::Vector2f(windowWidth / 2 - 280.f, windowHeight / 2));
 	objectiveText.addDetails("Defend the Tank!", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Cyan, sf::Vector2f(windowWidth / 2 - 100.f, 10));
 	gameoverText.addDetails("GAME OVER!", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
 	playerHealthText.addDetails("Player Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 50));
 	defendObjectHealthText.addDetails("Tank Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 80));
+	aboutText.addDetails("Som Kashyap presents: \n Operation Iron Wall", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color::White, sf::Vector2f(windowWidth / 2 - 250.f, windowHeight / 2));
 }
 
 void Game::handleEvents()
@@ -395,6 +404,10 @@ void Game::handleEvents()
 					state = GameState::Start;
 				else if (state == GameState::Start)
 					state = GameState::Menu;
+				else if (state == GameState::About)
+					state = GameState::Menu;
+				else if (state == GameState::Gameover)
+					state = GameState::Menu;
 			}
 
 			if (event.key.code == sf::Keyboard::P) {
@@ -406,6 +419,7 @@ void Game::handleEvents()
 				state = GameState::Exit;
 				window.close();
 			}
+
 		}
 	}
 }
@@ -681,6 +695,10 @@ void Game::render()
 	else if (state == GameState::Gameover) {
 			window.draw(bloodSprite);
 		window.draw(gameoverText.getText());
+	}
+	else if (state == GameState::About) {
+		window.draw(aboutSprite);
+		window.draw(aboutText.getText());
 	}
 
 	window.display();
