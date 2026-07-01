@@ -229,11 +229,11 @@ public:
 	sf::Vector2f defendObjectPosition;
 	float defendObjectHealthWidth;
 	float defendObjectHealthHeight;
-	float defendObjectHealth = 100.0f;
+	int defendObjectHealth = 100;
 	sf::RectangleShape playerHealthShape;
 	float playerHealthWidth;
 	float playerHealthHeight;
-	float playerHealth = 100.f;
+	int playerHealth = 100;
 	sf::Vector2f playerVelocity = sf::Vector2f(500, 0);
 	sf::Vector2f jumpVelocity;
 
@@ -255,7 +255,10 @@ public:
 	sf::Sprite defendObjectSprite;
 	sf::Texture menuTexture;
 	sf::Sprite menuSprite;
-	
+	sf::Texture bloodTexture;
+	sf::Sprite bloodSprite;
+	bool showBlood = false;
+
 	Animation idleAnimation;
 	Text enemiesKilledText;
 	Text enemyDronesKilledText;
@@ -264,6 +267,7 @@ public:
 	Text objectiveText;
 	Text gameoverText;
 	Text playerHealthText;
+	Text defendObjectHealthText;
 	int enemiesKilled = 0;
 	int enemyDronesKilled = 0;
 
@@ -306,7 +310,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 
 	player.setSize(sf::Vector2f(50, 50));
 	player.setFillColor(sf::Color::Green);
-	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y);
+	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y-20);
 
 	backgroundTexture.loadFromFile("resources/War4.png");
 	backgroundSprite.setTexture(backgroundTexture);
@@ -341,6 +345,10 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	menuSprite.setTexture(menuTexture);
 	menuSprite.setScale(windowWidth / menuSprite.getGlobalBounds().width, windowHeight / menuSprite.getGlobalBounds().height);
 
+	bloodTexture.loadFromFile("resources/Effect_4.png");
+	bloodSprite.setTexture(bloodTexture);
+	bloodSprite.setScale(windowWidth / bloodSprite.getGlobalBounds().width, windowHeight / bloodSprite.getGlobalBounds().height);
+
 	enemiesKilledText.addDetails("Enemies Killed: 0","resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 80));
 	enemyDronesKilledText.addDetails("Drones Killed: 0", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Yellow, sf::Vector2f(10, 50));
 
@@ -349,6 +357,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Soldier Defence")
 	objectiveText.addDetails("Defend the Tank!", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Cyan, sf::Vector2f(windowWidth / 2 - 100.f, 10));
 	gameoverText.addDetails("GAME OVER!", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color::Red, sf::Vector2f(windowWidth / 2 - 120.f, windowHeight / 2));
 	playerHealthText.addDetails("Player Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 50));
+	defendObjectHealthText.addDetails("Tank Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 80));
 }
 
 void Game::handleEvents()
@@ -403,13 +412,18 @@ void Game::handleEvents()
 
 void Game::update()
 {
-	playerHealthShape.setPosition(player.getPosition().x+15, player.getPosition().y - 60.0);
+	playerHealthShape.setPosition(player.getPosition().x+15, player.getPosition().y - 80.0);
 	defendObjectSprite.setPosition(defendObject.getPosition().x ,defendObject.getPosition().y+defendObjectSprite.getGlobalBounds().height-25.0);
 	weaponSprite.setPosition(player.getPosition().x + 20, player.getPosition().y + player.getGlobalBounds().height / 2-30.0);
 	idleAnimation.update(deltaTime);
 	idleAnimation.getSprite().setPosition(player.getPosition().x, player.getPosition().y - 55.f);
 
 	if (state == GameState::Start) {
+
+		if (defendObjectHealth <= 50) {
+			showBlood = true;
+		}
+
 		for (auto& bullet : bullets) {
 			bullet.update(deltaTime, bulletSprite);
 		}
@@ -476,7 +490,9 @@ void Game::update()
 		for (int i = 0; i < enemyBullets.size(); i++) {
 
 			if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
-				defendObjectHealth -= 5;
+				if(defendObjectHealth > 0) defendObjectHealth -= 5;
+				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
+				if (defendObjectHealth == 0) state = GameState::Gameover;
 				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
 				enemyBullets.erase(enemyBullets.begin() + i);
 				i--;
@@ -497,6 +513,7 @@ void Game::update()
 			if (enemies[i].enemyShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
 				enemies[i].isAttacking = true;
 				if(defendObjectHealth > 0)  defendObjectHealth -= 1;
+				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
 				if (defendObjectHealth == 0) state = GameState::Gameover;
 				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
@@ -616,9 +633,12 @@ void Game::render()
 {
 	window.clear(sf::Color::Black);
 
+	
+
 	if (state == GameState::Start) {
 
 		window.draw(backgroundSprite);
+		if (showBlood) window.draw(bloodSprite);
 		window.draw(idleAnimation.getSprite());
 		window.draw(weaponSprite);
 		window.draw(defendObjectSprite);
@@ -628,6 +648,7 @@ void Game::render()
 		window.draw(enemyDronesKilledText.getText());
 		window.draw(objectiveText.getText());
 		window.draw(playerHealthText.getText());
+		window.draw(defendObjectHealthText.getText());
 
 		for (auto& bullet : bullets) {
 			window.draw(bulletSprite);
@@ -658,8 +679,10 @@ void Game::render()
 	}
 
 	else if (state == GameState::Gameover) {
+			window.draw(bloodSprite);
 		window.draw(gameoverText.getText());
 	}
+
 	window.display();
 
 }
