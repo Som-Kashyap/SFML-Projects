@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include<SFML/Audio.hpp>
 #include "Animations.h"
 #include "Text.h"
 #include <iostream>
@@ -262,6 +263,14 @@ public:
 	sf::Sprite aboutSprite;
 	bool showBlood = false;
 
+	sf::Music backgroundMusic;
+	sf::SoundBuffer shootSoundBuffer;
+	sf::Sound shootSound;
+	sf::SoundBuffer hitSoundBuffer;
+	sf::Sound hitSound;
+	sf::SoundBuffer gameoverSoundBuffer;
+	sf::Sound gameoverSound;
+
 	Animation idleAnimation;
 	Text enemiesKilledText;
 	Text enemyDronesKilledText;
@@ -367,6 +376,23 @@ Game::Game() :window(sf::VideoMode(800, 600), "Operation Iron Wall")
 	playerHealthText.addDetails("Player Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 50));
 	defendObjectHealthText.addDetails("Tank Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 80));
 	aboutText.addDetails("Som Kashyap presents: \n Operation Iron Wall", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color::White, sf::Vector2f(windowWidth / 2 - 250.f, windowHeight / 2));
+
+	backgroundMusic.openFromFile("resources/williamhector-horde-war-drums-loop-130bpm-342956.ogg");
+	backgroundMusic.setLoop(true);
+	backgroundMusic.setVolume(100.f);
+	backgroundMusic.play();
+
+	shootSoundBuffer.loadFromFile("resources/tuomas_data-gun-shot-1-176892.ogg");
+	shootSound.setBuffer(shootSoundBuffer);
+	shootSound.setVolume(50.f);
+
+	hitSoundBuffer.loadFromFile("resources/voicebosch-missile-explosion-168600.ogg");
+	hitSound.setBuffer(hitSoundBuffer);
+	hitSound.setVolume(100.f);
+
+	gameoverSoundBuffer.loadFromFile("resources/universfield-game-over-deep-male-voice-clip-352695.ogg");
+	gameoverSound.setBuffer(gameoverSoundBuffer);
+	gameoverSound.setVolume(100.f);
 }
 
 void Game::handleEvents()
@@ -393,6 +419,7 @@ void Game::handleEvents()
 				bullet.bulletVelocity = sf::Vector2f(800.f, 0.f);
 				bullets.emplace_back(bullet);
 				std::cout << "Number of bullets: " << bullets.size() << std::endl;
+				shootSound.play();
 			}
 
 		}
@@ -408,11 +435,18 @@ void Game::handleEvents()
 					state = GameState::Menu;
 				else if (state == GameState::Gameover)
 					state = GameState::Menu;
+				    backgroundMusic.play();
 			}
 
 			if (event.key.code == sf::Keyboard::P) {
-				if (state == GameState::Pause) state = GameState::Start;
-				else if (state == GameState::Start) state = GameState::Pause;
+				if (state == GameState::Pause) {
+					state = GameState::Start;
+					backgroundMusic.play();
+				}
+				else if (state == GameState::Start) {
+					state = GameState::Pause;
+					backgroundMusic.pause();
+				}
 			}
 
 			if (event.key.code == sf::Keyboard::Escape) {
@@ -506,12 +540,17 @@ void Game::update()
 			if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
 				if(defendObjectHealth > 0) defendObjectHealth -= 5;
 				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
-				if (defendObjectHealth == 0) state = GameState::Gameover;
+				if (defendObjectHealth == 0) {
+					state = GameState::Gameover;
+					gameoverSound.play();
+					backgroundMusic.stop();
+				}
 				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
 				enemyBullets.erase(enemyBullets.begin() + i);
 				i--;
 				std::cout << "Enemy bullet destroyed" << std::endl;
 				shakeTime = 0.15f;
+				hitSound.play();
 
 				if (shakeTime > 0) {
 					shakeTime -= deltaTime;
@@ -528,7 +567,11 @@ void Game::update()
 				enemies[i].isAttacking = true;
 				if(defendObjectHealth > 0)  defendObjectHealth -= 1;
 				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
-				if (defendObjectHealth == 0) state = GameState::Gameover;
+				if (defendObjectHealth == 0) {
+					state = GameState::Gameover;
+					gameoverSound.play();
+					backgroundMusic.stop();
+				}
 				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
 
@@ -538,7 +581,11 @@ void Game::update()
 				if (playerHealth > 0) playerHealth -= 1;
 				playerHealthText.toString("Player Health: " + std::to_string(playerHealth));
 				playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
-				if (playerHealth == 0 ) state = GameState::Gameover;
+				if (playerHealth == 0 ) {
+					state = GameState::Gameover;
+					gameoverSound.play();
+					backgroundMusic.stop();
+				}
 				enemies[i].enemyVelocity = (sf::Vector2f(0, 0));
 				
 			}
