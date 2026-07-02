@@ -156,7 +156,7 @@ public:
 
 	float shootTimer = 0.f;
 	float shootCooldown = 1.5f;
-	bool isAttacking;
+	bool isAttacking = false;
 	Animation enemyIdleAnimation;
 
 };
@@ -164,6 +164,7 @@ public:
 Enemies::Enemies()
 {
 	bool loaded = enemyIdleAnimation.load("resources/SMS_Soldier_RUN_WEST_strip4.png",16, 24, 4, 0.15);
+	isAttacking = false;
 
 	if (!loaded)
 	{
@@ -172,7 +173,7 @@ Enemies::Enemies()
 
 	enemyIdleAnimation.getSprite().setScale(5.f, 5.f);
 
-	enemyShape.setSize(sf::Vector2f(50, 50));
+	enemyShape.setSize(sf::Vector2f(50, 120));
 	enemyShape.setFillColor(sf::Color::Red);
 
 	enemyShape.setPosition(
@@ -189,7 +190,7 @@ void Enemies::update(float deltaTime, std::vector<EnemyBullets> &enemyBullets ,s
 	if (isAttacking) enemyIdleAnimation.update(deltaTime, true);
 	else enemyIdleAnimation.update(deltaTime, false);
 	enemyShape.move(enemyVelocity * deltaTime);
-	enemyIdleAnimation.getSprite().setPosition(enemyShape.getPosition().x , enemyShape.getPosition().y - 48.0);
+	enemyIdleAnimation.getSprite().setPosition(enemyShape.getPosition().x , enemyShape.getPosition().y);
 	
 }
 
@@ -324,7 +325,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Operation Iron Wall")
 
 	player.setSize(sf::Vector2f(50, 50));
 	player.setFillColor(sf::Color::Green);
-	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y-20);
+	player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y-5);
 
 	backgroundTexture.loadFromFile("resources/War4.png");
 	backgroundSprite.setTexture(backgroundTexture);
@@ -429,29 +430,21 @@ void Game::handleEvents()
 			if (event.key.code == sf::Keyboard::Enter)
 			{
 				if (state == GameState::Menu)
+				{
 					state = GameState::Start;
-				else if (state == GameState::About)
-					state = GameState::Menu;
-				else if (state == GameState::Gameover)
-					state = GameState::Menu;
-				    resetGame();
-				    backgroundMusic.play();
-			}
-
-			if (event.key.code == sf::Keyboard::P) {
-				if (state == GameState::Pause) {
-					state = GameState::Start;
+					resetGame();
 					backgroundMusic.play();
 				}
-				else if (state == GameState::Start) {
-					state = GameState::Pause;
-					backgroundMusic.pause();
+				else if (state == GameState::About)
+				{
+					state = GameState::Menu;
 				}
-			}
-
-			if (event.key.code == sf::Keyboard::Escape) {
-				state = GameState::Exit;
-				window.close();
+				else if (state == GameState::Gameover)
+				{
+					state = GameState::Menu;
+					resetGame();
+					backgroundMusic.play();
+				}
 			}
 
 		}
@@ -505,20 +498,27 @@ void Game::update()
 			else ++it;
 		}
 
-		for (int i = 0; i < bullets.size(); i++) {
-			for (int j = 0; j < enemies.size(); j++) {
-				if (bullets[i].bulletShape.getGlobalBounds().intersects(enemies[j].enemyShape.getGlobalBounds()) && enemies[j].enemyShape.getPosition().x <= window.getSize().x) {
-					std::cout << "Bullet hit enemy" << std::endl;
-					enemiesKilled++;
-					enemiesKilledText.toString("Enemies Killed: " + std::to_string(enemiesKilled));
-					bullets.erase(bullets.begin() + i);
-					i--;
-					enemies.erase(enemies.begin() + j);
-					j--;
+		for (auto bullet = bullets.begin(); bullet != bullets.end(); )
+		{
+			bool hit = false;
+
+			for (auto enemy = enemies.begin(); enemy != enemies.end(); enemy++)
+			{
+				if (bullet->bulletShape.getGlobalBounds()
+					.intersects(enemy->enemyShape.getGlobalBounds()))
+				{
+					enemies.erase(enemy);
+					bullet = bullets.erase(bullet);
+					hit = true;
 					break;
 				}
 			}
+
+			if (!hit)
+				bullet++;
 		}
+	}
+		
 
 		for (int i = 0; i < bullets.size(); i++) {
 			for (int j = 0; j < attackingEnemies.size(); j++) {
@@ -538,29 +538,38 @@ void Game::update()
 		for (int i = 0; i < enemyBullets.size(); i++) {
 
 			if (enemyBullets[i].enemyBulletShape.getGlobalBounds().intersects(defendObject.getGlobalBounds())) {
-				if(defendObjectHealth > 0) defendObjectHealth -= 5;
+
+				if (defendObjectHealth > 0) defendObjectHealth -= 5;
+
 				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
-				if (defendObjectHealth == 0) {
-					state = GameState::Gameover;
-					resetGame();
-					gameoverSound.play();
-					backgroundMusic.stop();
-				}
-				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
+
 				enemyBullets.erase(enemyBullets.begin() + i);
 				i--;
+
 				std::cout << "Enemy bullet destroyed" << std::endl;
+
 				shakeTime = 0.15f;
 				hitSound.play();
 
-				if (shakeTime > 0) {
-					shakeTime -= deltaTime;
-					float offset = (float)(std::rand() % 7) - 3;
-					defendObject.setPosition(defendObjectPosition.x + offset, defendObjectPosition.y);
+				if (defendObjectHealth <= 0) {
+					state = GameState::Gameover;
+					gameoverSound.play();
+					backgroundMusic.stop();
+					return;   
 				}
-				else defendObject.setPosition(defendObjectPosition);
+
+				defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
 
 			}
+		}
+
+		if (shakeTime > 0) {
+			shakeTime -= deltaTime;
+			float offset = (float)(std::rand() % 7) - 3;
+			defendObject.setPosition(defendObjectPosition.x + offset, defendObjectPosition.y);
+		}
+		else {
+			defendObject.setPosition(defendObjectPosition);
 		}
 
 		for (int i = 0; i < enemies.size(); i++) {
@@ -568,7 +577,7 @@ void Game::update()
 				enemies[i].isAttacking = true;
 				if(defendObjectHealth > 0)  defendObjectHealth -= 1;
 				defendObjectHealthText.toString("Tank Health: " + std::to_string(defendObjectHealth));
-				if (defendObjectHealth == 0) {
+				if (defendObjectHealth <= 0) {
 					state = GameState::Gameover;
 					resetGame();
 					player.setPosition(static_cast<float>(window.getSize().x) / 2 - player.getSize().x / 2, static_cast<float>(window.getSize().y) - player.getSize().y - 20);
@@ -584,7 +593,7 @@ void Game::update()
 				if (playerHealth > 0) playerHealth -= 1;
 				playerHealthText.toString("Player Health: " + std::to_string(playerHealth));
 				playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
-				if (playerHealth == 0 ) {
+				if (playerHealth <= 0 ) {
 					state = GameState::Gameover;
 					resetGame();
 					gameoverSound.play();
@@ -667,7 +676,7 @@ void Game::update()
 			// Check if player reached the ground
 			if (player.getPosition().y + player.getSize().y >= window.getSize().y)
 			{
-				player.setPosition(player.getPosition().x, window.getSize().y - player.getSize().y);
+				player.setPosition(player.getPosition().x, window.getSize().y - player.getSize().y - 15);
 				playerVelocity.y = 0.f;
 				onGround = true;
 			}
@@ -692,7 +701,6 @@ void Game::update()
 		}
 	}
 	
-}
 
 void Game::resetGame() {
 
@@ -705,6 +713,8 @@ void Game::resetGame() {
 	enemyDronesKilled = 0;
 	enemiesKilledText.toString("Enemies Killed: 0");
 	enemyDronesKilledText.toString("Enemy Drones Killed: 0");
+	playerHealthShape.setSize(sf::Vector2f(playerHealth, playerHealthHeight));
+	defendObjectHealthShape.setSize(sf::Vector2f(defendObjectHealth, defendObjectHealthHeight));
 	enemies.clear();
 	bullets.clear();
 	attackingEnemies.clear();
