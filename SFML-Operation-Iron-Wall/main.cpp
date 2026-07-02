@@ -131,9 +131,6 @@ void AttackingEnemies::update(float deltaTime,sf::Vector2f objectPosition,std::v
 			direction /= length;
 
 			enemyBullets.emplace_back(attackingEnemyShape.getPosition() , direction);
-
-			std::cout << "Enemy bullet created" << std::endl;
-			std::cout << "Number of enemy bullets: " << enemyBullets.size() << std::endl;
 			shootTimer = 0.f;
 		}
 	}
@@ -416,11 +413,9 @@ void Game::handleEvents()
 			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::LControl) {
 
 				Bullets bullet;
-				std::cout << "Bullet created" << std::endl;
 				bullet.bulletShape.setPosition(player.getPosition().x + player.getSize().x, player.getPosition().y + player.getSize().y / 2 - bullet.bulletShape.getRadius() - 15);
 				bullet.bulletVelocity = sf::Vector2f(800.f, 0.f);
 				bullets.emplace_back(bullet);
-				std::cout << "Number of bullets: " << bullets.size() << std::endl;
 				shootSound.play();
 			}
 
@@ -447,6 +442,17 @@ void Game::handleEvents()
 				}
 			}
 
+			if (event.key.code == sf::Keyboard::P) {
+				if (state == GameState::Start) {
+					state = GameState::Pause;
+					backgroundMusic.pause();
+				}
+				else if (state == GameState::Pause) {
+					state = GameState::Start;
+					backgroundMusic.play();
+				}
+			}
+			if (event.key.code == sf::Keyboard::Escape) window.close();
 		}
 	}
 }
@@ -528,7 +534,6 @@ void Game::update()
 				if (bullets[i].bulletShape.getGlobalBounds().intersects(attackingEnemies[j].attackingEnemyShape.getGlobalBounds()) && attackingEnemies[j].attackingEnemyShape.getPosition().x < 800) {
 					enemyDronesKilled++;
 					enemyDronesKilledText.toString("Drones Killed: " + std::to_string(enemyDronesKilled));
-					std::cout << "Bullet hit attacking enemy" << std::endl;
 					bullets.erase(bullets.begin() + i);
 					i--;
 					attackingEnemies.erase(attackingEnemies.begin() + j);
@@ -548,8 +553,6 @@ void Game::update()
 
 				enemyBullets.erase(enemyBullets.begin() + i);
 				i--;
-
-				std::cout << "Enemy bullet destroyed" << std::endl;
 
 				shakeTime = 0.15f;
 				hitSound.play();
@@ -617,7 +620,6 @@ void Game::update()
 			if (attackingEnemies[i].attackingEnemyShape.getPosition().x < 0) {
 				attackingEnemies.erase(attackingEnemies.begin() + i);
 				i--;
-				std::cout << "Attacking enemy erased" << std::endl;
 			}
 		}
 
@@ -625,7 +627,6 @@ void Game::update()
 			if (enemies[i].enemyShape.getPosition().x < 0) {
 				enemies.erase(enemies.begin() + i);
 				i--;
-				std::cout << "Enemy destroyed" << std::endl;
 			}
 		}
 
@@ -636,9 +637,7 @@ void Game::update()
 
 			for (int i = 0; i < enemyCount; i++) {
 				//Enemies enemy;
-				std::cout << "Enemy created" << std::endl;
 				enemies.emplace_back();
-				std::cout << "Number of enemies: " << enemies.size() << std::endl;
 			}
 
 			spawnEnemy = false;
@@ -651,9 +650,8 @@ void Game::update()
 			for (int i = 0; i < attackingEnemyCount; i++) {
 
 				AttackingEnemies attackingEnemyObj;
-				std::cout << "Attacking enemy created" << std::endl;
 				attackingEnemies.emplace_back();
-				std::cout << "Number of attacking enemies: " << attackingEnemies.size() << std::endl;
+				
 
 			}
 
