@@ -510,7 +510,10 @@ void Game::update()
 					enemies.erase(enemy);
 					bullet = bullets.erase(bullet);
 					hit = true;
+					enemiesKilled++;
+					enemiesKilledText.toString("Enemies Killed: " + std::to_string(enemiesKilled));
 					break;
+
 				}
 			}
 
