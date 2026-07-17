@@ -37,6 +37,10 @@ This project was developed to strengthen my understanding of C++, Object-Oriente
 
 ---
 
+## Demo
+<img width="400" height="318" alt="operation-iron-wall" src="https://github.com/user-attachments/assets/60f32a02-2b3d-453e-813d-ae801c0d9ae9" />
+
+
 ## Technologies Used
 
 - C++
