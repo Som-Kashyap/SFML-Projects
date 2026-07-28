@@ -279,6 +279,7 @@ public:
 	Text playerHealthText;
 	Text defendObjectHealthText;
 	Text aboutText;
+	Text startText;
 	int enemiesKilled = 0;
 	int enemyDronesKilled = 0;
 
@@ -294,7 +295,7 @@ public:
 
 };
 
-Game::Game() :window(sf::VideoMode(800, 600), "Operation Iron Wall")
+Game::Game() :window(sf::VideoMode(800, 600), "Operation Iron Wall", sf::Style::Titlebar | sf::Style::Close)
 {
 	window.setFramerateLimit(60);
 	deltaTime = 0.f;
@@ -375,6 +376,7 @@ Game::Game() :window(sf::VideoMode(800, 600), "Operation Iron Wall")
 	playerHealthText.addDetails("Player Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 50));
 	defendObjectHealthText.addDetails("Tank Health: 100", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Red, sf::Vector2f(windowWidth - 300.f, 80));
 	aboutText.addDetails("Som Kashyap presents: \n Operation Iron Wall", "resources/PixelOperatorMonoHB8.ttf", 24, sf::Color::White, sf::Vector2f(windowWidth / 2 - 250.f, windowHeight / 2));
+	startText.addDetails("START: Enter", "resources/PixelOperatorMonoHB8.ttf", 16, sf::Color::Blue, sf::Vector2f(windowWidth / 2 - 250.f, windowHeight / 2+ 100.));
 
 	backgroundMusic.openFromFile("resources/williamhector-horde-war-drums-loop-130bpm-342956.ogg");
 	backgroundMusic.setLoop(true);
@@ -780,6 +782,7 @@ void Game::render()
 	else if (state == GameState::About) {
 		window.draw(aboutSprite);
 		window.draw(aboutText.getText());
+		window.draw(startText.getText());
 	}
 
 	window.display();
